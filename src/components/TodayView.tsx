@@ -1,0 +1,192 @@
+import { motion } from 'motion/react'
+import {
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  CircleDot,
+  Clock3,
+  Grid3X3,
+  MessagesSquare,
+  Repeat2,
+  Sparkles,
+} from 'lucide-react'
+import type { ViewId } from '../types'
+import { dayOfYear, useApp } from '../lib/AppContext'
+import { compoundConsonants, compoundVowels, consonants, vowels } from '../data/hangul'
+import { words } from '../data/words'
+import { phrases } from '../data/phrases'
+import { PlayButton, ProgressRing, SectionHeader, StatChip } from './Shared'
+
+const letterCount = consonants.length + vowels.length + compoundConsonants.length + compoundVowels.length
+
+export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }) {
+  const {
+    progress,
+    toggleWordLearned,
+    dueWords,
+    streak,
+    todayPoints,
+    masteredWordCount,
+    favoritePhraseCount,
+    voiceRate,
+    notify,
+  } = useApp()
+
+  const day = dayOfYear()
+  const wordOfDay = words[day % words.length]
+  const phraseOfDay = phrases[day % phrases.length]
+  const todayWords = Array.from({ length: 5 }, (_, index) => words[(day + index) % words.length])
+
+  const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
+  const totalCorrect = Object.values(progress.history).reduce((sum, item) => sum + item.correct, 0)
+  const accuracy = totalAnswered ? totalCorrect / totalAnswered : 0
+  const totalSessions = Object.values(progress.history).reduce((sum, item) => sum + item.sessions, 0)
+  const learnedToday = todayWords.filter((word) => progress.learnedWords[word.id]).length
+
+  return (
+    <div className="view-stack">
+      <section className="today-hero">
+        <span className="today-hero__watermark" aria-hidden="true">
+          {wordOfDay.ko}
+        </span>
+        <div className="today-hero__topline">
+          <span className="pill pill--brand">
+            <Sparkles size={14} />
+            今日单词
+          </span>
+          <span className="today-hero__greeting">保持节奏，慢慢来</span>
+        </div>
+        <div className="today-hero__body">
+          <div className="today-hero__word">
+            <span className="hangul-display">{wordOfDay.ko}</span>
+            <div className="today-hero__meta">
+              <p className="roman">{wordOfDay.roman}</p>
+              <p className="meaning">{wordOfDay.zh}</p>
+              {wordOfDay.note ? <p className="note">{wordOfDay.note}</p> : null}
+            </div>
+          </div>
+          <div className="today-hero__actions">
+            <PlayButton text={wordOfDay.ko} rate={voiceRate} label="播放今日单词" onUnavailable={notify} />
+            <button
+              type="button"
+              className={`button ${progress.learnedWords[wordOfDay.id] ? 'button--success' : 'button--primary'}`}
+              onClick={() => toggleWordLearned(wordOfDay.id)}
+            >
+              <CheckCircle2 size={16} />
+              {progress.learnedWords[wordOfDay.id] ? '已学会' : '标为已学'}
+            </button>
+          </div>
+        </div>
+        <div className="today-hero__stats">
+          <StatChip icon={<Clock3 size={15} />}>{todayPoints} 今日点数</StatChip>
+          <StatChip icon={<Repeat2 size={15} />}>{streak} 天连续</StatChip>
+          <StatChip icon={<BookOpenCheck size={15} />}>{masteredWordCount} 已学单词</StatChip>
+        </div>
+      </section>
+
+      <SectionHeader eyebrow="TODAY PLAN" title="今天的三个小目标" description="每次只做一点点，累积起来就很多。" />
+      <div className="task-grid">
+        <motion.article
+          className="task-card"
+          whileHover={{ y: -2 }}
+          transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+        >
+          <div className="task-card__icon task-card__icon--blue">
+            <Grid3X3 size={20} />
+          </div>
+          <div className="task-card__body">
+            <span className="task-card__kicker">第 1 步</span>
+            <h3>认识谚文</h3>
+            <p>已认识 {progress.learnedLetters.length} / {letterCount} 个谚文音</p>
+            <ProgressRing value={progress.learnedLetters.length / letterCount} size={58} label={<strong>{progress.learnedLetters.length}</strong>} />
+          </div>
+          <button type="button" className="text-button" onClick={() => onNavigate('hangul')}>
+            去拼读 <ArrowRight size={15} />
+          </button>
+        </motion.article>
+
+        <motion.article
+          className="task-card"
+          whileHover={{ y: -2 }}
+          transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+        >
+          <div className="task-card__icon task-card__icon--coral">
+            <BookOpenCheck size={20} />
+          </div>
+          <div className="task-card__body">
+            <span className="task-card__kicker">第 2 步</span>
+            <h3>学习 5 个单词</h3>
+            <div className="task-card__chips">
+              {todayWords.map((word) => (
+                <span key={word.id} className={`mini-chip ${progress.learnedWords[word.id] ? 'mini-chip--done' : ''}`}>
+                  {word.ko}
+                </span>
+              ))}
+            </div>
+            <p>{learnedToday} / 5 已完成</p>
+          </div>
+          <button type="button" className="text-button" onClick={() => onNavigate('words')}>
+            去背词 <ArrowRight size={15} />
+          </button>
+        </motion.article>
+
+        <motion.article
+          className="task-card"
+          whileHover={{ y: -2 }}
+          transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+        >
+          <div className="task-card__icon task-card__icon--green">
+            <MessagesSquare size={20} />
+          </div>
+          <div className="task-card__body">
+            <span className="task-card__kicker">第 3 步</span>
+            <h3>记住一句话</h3>
+            <p className="task-card__phrase">{phraseOfDay.ko}</p>
+            <p className="note">{phraseOfDay.zh}</p>
+          </div>
+          <div className="task-card__actions">
+            <PlayButton text={phraseOfDay.ko} rate={voiceRate} size="sm" label="播放今日短语" onUnavailable={notify} />
+            <button type="button" className="text-button" onClick={() => onNavigate('phrases')}>
+              更多短语 <ArrowRight size={15} />
+            </button>
+          </div>
+        </motion.article>
+      </div>
+
+      <section className="review-strip">
+        <div className="review-strip__icon">
+          <Repeat2 size={22} />
+        </div>
+        <div className="review-strip__body">
+          <span className="eyebrow">REVIEW</span>
+          <h3>{dueWords.length ? `有 ${dueWords.length} 个已学单词待复习` : '今天没有到期复习，试试新练习'}</h3>
+          <p>{accuracy ? `最近正确率 ${Math.round(accuracy * 100)}%，已完成 ${totalSessions} 组练习` : '完成第一组练习，看看你的准确率'}</p>
+        </div>
+        <button type="button" className="button button--secondary" onClick={() => onNavigate('practice')}>
+          <CircleDot size={16} />
+          {dueWords.length ? '开始复习' : '随机测验'}
+        </button>
+      </section>
+
+      <SectionHeader eyebrow="SNAPSHOT" title="你的学习快照" />
+      <div className="stat-grid">
+        <div className="stat-tile">
+          <span className="stat-tile__value">{masteredWordCount}</span>
+          <span className="stat-tile__label">已学单词</span>
+        </div>
+        <div className="stat-tile">
+          <span className="stat-tile__value">{favoritePhraseCount}</span>
+          <span className="stat-tile__label">收藏短语</span>
+        </div>
+        <div className="stat-tile">
+          <span className="stat-tile__value">{totalSessions}</span>
+          <span className="stat-tile__label">完成练习</span>
+        </div>
+        <div className="stat-tile">
+          <span className="stat-tile__value">{Math.round(accuracy * 100)}%</span>
+          <span className="stat-tile__label">平均正确率</span>
+        </div>
+      </div>
+    </div>
+  )
+}

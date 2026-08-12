@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env.local
+public/audio/
+*.tsbuildinfo
+
+# Capacitor generated web bundle
+ios/App/App/public/
+
+# Local macOS files and development artifacts
+.DS_Store
+build/
+shots-*.png
