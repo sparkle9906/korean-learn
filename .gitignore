@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .env.local
+public/audio/
 *.tsbuildinfo
 
 # Capacitor generated web bundle
