@@ -185,14 +185,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const toggleWordLearned = useCallback((id: string) => {
     setProgress((current) => {
       const learnedWords = { ...current.learnedWords }
+      const day = dateKey()
       let activity = current.activity
-      if (learnedWords[id]) {
+      const learnedAt = learnedWords[id]
+
+      if (learnedAt) {
         delete learnedWords[id]
+
+        // A same-day toggle must undo the single point that marking this word
+        // learned just added. Older learning records did not affect today's score.
+        if (dateKey(new Date(learnedAt)) === day) {
+          activity = { ...activity, [day]: Math.max(0, (activity[day] ?? 0) - 1) }
+        }
       } else {
         learnedWords[id] = Date.now()
-        const day = dateKey()
         activity = { ...activity, [day]: (activity[day] ?? 0) + 1 }
       }
+
       return { ...current, learnedWords, activity }
     })
   }, [])
