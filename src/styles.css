@@ -2223,8 +2223,8 @@ input:focus-visible {
 .recent-list-dialog {
   display: flex;
   flex-direction: column;
-  width: min(760px, 100%);
-  height: min(88dvh, 820px);
+  width: min(680px, 100%);
+  height: min(82dvh, 740px);
   overflow: hidden;
   padding: 20px;
   background: var(--surface-solid);
@@ -2580,11 +2580,11 @@ input:focus-visible {
 
   .recent-list-backdrop {
     align-items: flex-end;
-    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
   }
 
   .recent-list-dialog {
-    height: min(91dvh, 900px);
+    height: min(84dvh, 760px);
     padding: 18px 16px 16px;
   }
 
