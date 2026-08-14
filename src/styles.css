@@ -2144,6 +2144,34 @@ input:focus-visible {
   white-space: nowrap;
 }
 
+.recent-item--phrase {
+  grid-template-areas:
+    "char category"
+    "roman category"
+    "zh category";
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 42px 18px 18px;
+  align-items: center;
+  gap: 2px 10px;
+  height: 104px;
+}
+
+.recent-item--phrase .recent-item__char {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.25;
+  text-overflow: clip;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.recent-item--phrase .recent-item__roman,
+.recent-item--phrase .recent-item__zh {
+  min-width: 0;
+}
+
 .reset-zone {
   display: flex;
   align-items: center;
@@ -2178,7 +2206,7 @@ input:focus-visible {
   -webkit-backdrop-filter: blur(10px);
 }
 
-.learned-words-backdrop {
+.recent-list-backdrop {
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -2192,7 +2220,7 @@ input:focus-visible {
   touch-action: none;
 }
 
-.learned-words-dialog {
+.recent-list-dialog {
   display: flex;
   flex-direction: column;
   width: min(760px, 100%);
@@ -2206,7 +2234,7 @@ input:focus-visible {
   touch-action: pan-y;
 }
 
-.learned-words-dialog__header {
+.recent-list-dialog__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -2215,19 +2243,19 @@ input:focus-visible {
   border-bottom: 1px solid var(--border);
 }
 
-.learned-words-dialog__header h2 {
+.recent-list-dialog__header h2 {
   margin: 4px 0 3px;
   font-size: 22px;
   font-weight: 760;
 }
 
-.learned-words-dialog__header p:last-child {
+.recent-list-dialog__header p:last-child {
   margin: 0;
   color: var(--text-secondary);
   font-size: 13px;
 }
 
-.learned-words-dialog__list {
+.recent-list-dialog__list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -2541,12 +2569,21 @@ input:focus-visible {
     display: block;
   }
 
-  .learned-words-backdrop {
+  .recent-item--phrase {
+    grid-template-areas:
+      "char category"
+      "roman category"
+      "zh category";
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 42px 18px 18px;
+  }
+
+  .recent-list-backdrop {
     align-items: flex-end;
     padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
   }
 
-  .learned-words-dialog {
+  .recent-list-dialog {
     height: min(91dvh, 900px);
     padding: 18px 16px 16px;
   }

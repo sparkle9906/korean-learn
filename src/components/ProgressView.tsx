@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, BookOpenCheck, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
+import { BarChart3, BookOpenCheck, Flame, Heart, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
+import { phraseById } from '../data/phrases'
 import { SectionHeader } from './Shared'
 import { speakKorean } from '../lib/speech'
-import type { QuizMode, Word } from '../types'
+import type { Phrase, QuizMode, Word } from '../types'
 
 const modeNames: Record<QuizMode, string> = {
   'word-ko-zh': '看韩语选意思',
@@ -36,24 +37,36 @@ function activityBars(activity: Record<string, number>, days = 14): { key: strin
   return bars
 }
 
-function LearnedWordItem({ word, voiceRate, notify }: { word: Word; voiceRate: number; notify: (message: string) => void }) {
-  const playWord = () => {
-    const ok = speakKorean(word.ko, voiceRate)
+type RecentEntry = Word | Phrase
+
+function RecentEntryItem({
+  entry,
+  variant,
+  voiceRate,
+  notify,
+}: {
+  entry: RecentEntry
+  variant: 'word' | 'phrase'
+  voiceRate: number
+  notify: (message: string) => void
+}) {
+  const playEntry = () => {
+    const ok = speakKorean(entry.ko, voiceRate)
     if (!ok) notify('当前浏览器不支持语音合成')
   }
 
   return (
     <button
       type="button"
-      className="recent-item"
-      aria-label={`播放 ${word.ko} 发音`}
-      title={`播放 ${word.ko} 发音`}
-      onClick={playWord}
+      className={`recent-item recent-item--${variant}`}
+      aria-label={`播放 ${entry.ko} 发音`}
+      title={`播放 ${entry.ko} 发音`}
+      onClick={playEntry}
     >
-      <span className={`recent-item__char ${word.ko.length > 6 ? 'recent-item__char--long' : ''}`}>{word.ko}</span>
-      <span className="recent-item__roman">{word.roman}</span>
-      <span className="recent-item__zh">{word.zh}</span>
-      <span className="category-tag">{word.category}</span>
+      <span className={`recent-item__char ${entry.ko.length > 6 ? 'recent-item__char--long' : ''}`}>{entry.ko}</span>
+      <span className="recent-item__roman">{entry.roman}</span>
+      <span className="recent-item__zh">{entry.zh}</span>
+      <span className="category-tag">{entry.category}</span>
     </button>
   )
 }
@@ -61,7 +74,7 @@ function LearnedWordItem({ word, voiceRate, notify }: { word: Word; voiceRate: n
 export function ProgressView() {
   const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints, voiceRate, notify } = useApp()
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [learnedWordsOpen, setLearnedWordsOpen] = useState(false)
+  const [recentListOpen, setRecentListOpen] = useState<'words' | 'phrases' | null>(null)
 
   const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
   const totalCorrect = Object.values(progress.history).reduce((sum, item) => sum + item.correct, 0)
@@ -78,15 +91,43 @@ export function ProgressView() {
     })
   const canExpandLearnedWords = learnedWords.length > 6
   const visibleLearnedWords = learnedWords.slice(0, 6)
+  const favoritePhrases = [...progress.favoritePhrases]
+    .reverse()
+    .flatMap((id) => {
+      const phrase = phraseById(id)
+      return phrase ? [phrase] : []
+    })
+  const canExpandFavoritePhrases = favoritePhrases.length > 6
+  const visibleFavoritePhrases = favoritePhrases.slice(0, 6)
+  const recentDialog =
+    recentListOpen === 'words'
+      ? {
+          eyebrow: 'LEARNED',
+          title: '已学习的单词',
+          description: `${learnedWords.length} 条记录，按最近学习时间排列。`,
+          closeLabel: '关闭已学习单词',
+          entries: learnedWords,
+          variant: 'word' as const,
+        }
+      : recentListOpen === 'phrases'
+        ? {
+            eyebrow: 'FAVORITES',
+            title: '已收藏的短语',
+            description: `${favoritePhrases.length} 条记录，按最近收藏时间排列。`,
+            closeLabel: '关闭已收藏短语',
+            entries: favoritePhrases,
+            variant: 'phrase' as const,
+          }
+        : null
 
   useEffect(() => {
-    if (!learnedWordsOpen) return undefined
+    if (!recentListOpen) return undefined
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setLearnedWordsOpen(false)
+      if (event.key === 'Escape') setRecentListOpen(null)
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [learnedWordsOpen])
+  }, [recentListOpen])
 
   return (
     <div className="view-stack">
@@ -178,7 +219,7 @@ export function ProgressView() {
                 className="icon-button recent-panel__expand"
                 aria-label="查看全部已学习单词"
                 title="查看全部"
-                onClick={() => setLearnedWordsOpen(true)}
+                onClick={() => setRecentListOpen('words')}
               >
                 <Maximize2 size={17} />
               </button>
@@ -188,13 +229,46 @@ export function ProgressView() {
         {visibleLearnedWords.length ? (
           <div className="recent-list">
             {visibleLearnedWords.map((word) => (
-              <LearnedWordItem key={word.id} word={word} voiceRate={voiceRate} notify={notify} />
+              <RecentEntryItem key={word.id} entry={word} variant="word" voiceRate={voiceRate} notify={notify} />
             ))}
           </div>
         ) : (
           <div className="empty-state empty-state--compact">
             <BookOpenCheck size={24} />
             <p>去单词页标几个词为已学吧。</p>
+          </div>
+        )}
+      </section>
+
+      <section className="recent-panel">
+        <SectionHeader
+          eyebrow="FAVORITES"
+          title="已收藏的短语"
+          description="按最近收藏时间排列。"
+          action={
+            canExpandFavoritePhrases ? (
+              <button
+                type="button"
+                className="icon-button recent-panel__expand"
+                aria-label="查看全部已收藏短语"
+                title="查看全部"
+                onClick={() => setRecentListOpen('phrases')}
+              >
+                <Maximize2 size={17} />
+              </button>
+            ) : null
+          }
+        />
+        {visibleFavoritePhrases.length ? (
+          <div className="recent-list">
+            {visibleFavoritePhrases.map((phrase) => (
+              <RecentEntryItem key={phrase.id} entry={phrase} variant="phrase" voiceRate={voiceRate} notify={notify} />
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state empty-state--compact">
+            <Heart size={24} />
+            <p>去短语页收藏常用表达吧。</p>
           </div>
         )}
       </section>
@@ -211,38 +285,38 @@ export function ProgressView() {
       </section>
 
       <AnimatePresence>
-        {learnedWordsOpen ? (
+        {recentDialog ? (
           <motion.div
-            className="learned-words-backdrop"
+            className="recent-list-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setLearnedWordsOpen(false)}
+            onClick={() => setRecentListOpen(null)}
           >
             <motion.section
-              className="learned-words-dialog"
+              className="recent-list-dialog"
               role="dialog"
               aria-modal="true"
-              aria-label="全部已学习的单词"
+              aria-label={`全部${recentDialog.title}`}
               initial={{ opacity: 0, scale: 0.94, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: 16 }}
               transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
               onClick={(event) => event.stopPropagation()}
             >
-              <header className="learned-words-dialog__header">
+              <header className="recent-list-dialog__header">
                 <div>
-                  <p className="eyebrow">LEARNED</p>
-                  <h2>已学习的单词</h2>
-                  <p>{learnedWords.length} 条记录，按最近学习时间排列。</p>
+                  <p className="eyebrow">{recentDialog.eyebrow}</p>
+                  <h2>{recentDialog.title}</h2>
+                  <p>{recentDialog.description}</p>
                 </div>
-                <button type="button" className="icon-button" aria-label="关闭已学习单词" title="关闭" onClick={() => setLearnedWordsOpen(false)}>
+                <button type="button" className="icon-button" aria-label={recentDialog.closeLabel} title="关闭" onClick={() => setRecentListOpen(null)}>
                   <X size={18} />
                 </button>
               </header>
-              <div className="learned-words-dialog__list">
-                {learnedWords.map((word) => (
-                  <LearnedWordItem key={word.id} word={word} voiceRate={voiceRate} notify={notify} />
+              <div className="recent-list-dialog__list">
+                {recentDialog.entries.map((entry) => (
+                  <RecentEntryItem key={entry.id} entry={entry} variant={recentDialog.variant} voiceRate={voiceRate} notify={notify} />
                 ))}
               </div>
             </motion.section>
