@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { BarChart3, BookOpenCheck, CheckCircle2, Flame, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
-import { SectionHeader } from './Shared'
+import { PlayButton, SectionHeader } from './Shared'
 import type { QuizMode } from '../types'
 
 const modeNames: Record<QuizMode, string> = {
@@ -36,7 +36,7 @@ function activityBars(activity: Record<string, number>, days = 14): { key: strin
 }
 
 export function ProgressView() {
-  const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints } = useApp()
+  const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints, voiceRate, notify } = useApp()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
@@ -46,9 +46,12 @@ export function ProgressView() {
   const bars = activityBars(progress.activity)
   const maxPoints = Math.max(1, ...bars.map((bar) => bar.points))
 
-  const recentWords = Object.entries(progress.learnedWords)
+  const learnedWords = Object.entries(progress.learnedWords)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
+    .flatMap(([id]) => {
+      const word = wordById(id)
+      return word ? [word] : []
+    })
 
   return (
     <div className="view-stack">
@@ -130,30 +133,27 @@ export function ProgressView() {
 
       <section className="recent-panel">
         <SectionHeader
-          eyebrow="RECENT"
-          title="最近学过的单词"
-          description="勾选掌握后，它们会进入复习队列。"
+          eyebrow="LEARNED"
+          title="已学习的单词"
+          description="按最近学习排序，点击按钮可播放发音。"
           action={
             <span className="count-badge">
               <CheckCircle2 size={14} />
-              {recentWords.length} 条记录
+              {learnedWords.length} 条记录
             </span>
           }
         />
-        {recentWords.length ? (
+        {learnedWords.length ? (
           <div className="recent-list">
-            {recentWords.map(([id]) => {
-              const word = wordById(id)
-              if (!word) return null
-              return (
-                <div className="recent-item" key={id}>
-                  <span className="recent-item__char">{word.ko}</span>
-                  <span className="recent-item__roman">{word.roman}</span>
-                  <span className="recent-item__zh">{word.zh}</span>
-                  <span className="category-tag">{word.category}</span>
-                </div>
-              )
-            })}
+            {learnedWords.map((word) => (
+              <div className="recent-item" key={word.id}>
+                <span className="recent-item__char">{word.ko}</span>
+                <span className="recent-item__roman">{word.roman}</span>
+                <span className="recent-item__zh">{word.zh}</span>
+                <span className="category-tag">{word.category}</span>
+                <PlayButton text={word.ko} rate={voiceRate} size="sm" label={`播放 ${word.ko} 发音`} onUnavailable={notify} />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="empty-state empty-state--compact">

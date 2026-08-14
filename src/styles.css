@@ -2081,11 +2081,14 @@ input:focus-visible {
 
 .recent-item {
   display: grid;
-  grid-template-columns: 68px 1fr 1.2fr auto;
+  grid-template-areas: "char roman zh category play";
+  grid-template-columns: 68px minmax(0, 1fr) minmax(0, 1.2fr) auto auto;
   align-items: center;
   gap: 10px;
   padding: 11px 4px;
   border-bottom: 1px solid var(--border);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
 }
 
 .recent-item:last-child {
@@ -2093,6 +2096,7 @@ input:focus-visible {
 }
 
 .recent-item__char {
+  grid-area: char;
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   font-size: 20px;
   font-weight: 750;
@@ -2107,9 +2111,22 @@ input:focus-visible {
   white-space: nowrap;
 }
 
+.recent-item__roman {
+  grid-area: roman;
+}
+
 .recent-item__zh {
+  grid-area: zh;
   color: var(--text);
   font-weight: 600;
+}
+
+.recent-item .category-tag {
+  grid-area: category;
+}
+
+.recent-item .play-button {
+  grid-area: play;
 }
 
 .reset-zone {
@@ -2438,11 +2455,16 @@ input:focus-visible {
   }
 
   .recent-item {
-    grid-template-columns: 48px 1fr auto;
+    grid-template-areas:
+      "char roman play"
+      "char zh category";
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    column-gap: 10px;
+    row-gap: 3px;
   }
 
   .recent-item__roman {
-    display: none;
+    display: block;
   }
 
   .reset-zone {
