@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
+import { BarChart3, BookOpenCheck, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
 import { SectionHeader } from './Shared'
@@ -43,20 +43,18 @@ function LearnedWordItem({ word, voiceRate, notify }: { word: Word; voiceRate: n
   }
 
   return (
-    <motion.button
+    <button
       type="button"
       className="recent-item"
       aria-label={`播放 ${word.ko} 发音`}
       title={`播放 ${word.ko} 发音`}
       onClick={playWord}
-      whileTap={{ scale: 0.985 }}
-      transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
     >
-      <span className="recent-item__char">{word.ko}</span>
+      <span className={`recent-item__char ${word.ko.length > 6 ? 'recent-item__char--long' : ''}`}>{word.ko}</span>
       <span className="recent-item__roman">{word.roman}</span>
       <span className="recent-item__zh">{word.zh}</span>
       <span className="category-tag">{word.category}</span>
-    </motion.button>
+    </button>
   )
 }
 
@@ -168,31 +166,23 @@ export function ProgressView() {
         </section>
       </div>
 
-      <section
-        className={`recent-panel ${canExpandLearnedWords ? 'recent-panel--expandable' : ''}`}
-        tabIndex={canExpandLearnedWords ? 0 : undefined}
-        aria-label={canExpandLearnedWords ? `最近学过的单词，已显示 ${visibleLearnedWords.length} 个，共 ${learnedWords.length} 个。点击查看全部。` : undefined}
-        onClick={(event) => {
-          if (event.target instanceof Element && event.target.closest('button')) return
-          if (canExpandLearnedWords) setLearnedWordsOpen(true)
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            if (canExpandLearnedWords) setLearnedWordsOpen(true)
-          }
-        }}
-      >
+      <section className="recent-panel">
         <SectionHeader
           eyebrow="RECENT"
           title="最近学过的单词"
           description="按最近学习时间排列。"
           action={
-            <span className="count-badge">
-              <CheckCircle2 size={14} />
-              {canExpandLearnedWords ? <Maximize2 size={14} aria-hidden="true" /> : null}
-              {visibleLearnedWords.length} / {learnedWords.length} 条记录
-            </span>
+            canExpandLearnedWords ? (
+              <button
+                type="button"
+                className="icon-button recent-panel__expand"
+                aria-label="查看全部已学习单词"
+                title="查看全部"
+                onClick={() => setLearnedWordsOpen(true)}
+              >
+                <Maximize2 size={17} />
+              </button>
+            ) : null
           }
         />
         {visibleLearnedWords.length ? (

@@ -1,8 +1,10 @@
 import { audioUrlFor } from './audioMap'
 
 let voices: SpeechSynthesisVoice[] = []
-let localAudioFiles: Set<string> | null = null
 let currentAudio: HTMLAudioElement | null = null
+let lastPlayAt = 0
+
+const playDebounceMs = 260
 
 function refreshVoices() {
   if ('speechSynthesis' in window) {
@@ -13,14 +15,6 @@ function refreshVoices() {
 if (typeof window !== 'undefined') {
   refreshVoices()
   window.speechSynthesis?.addEventListener('voiceschanged', refreshVoices)
-  fetch('/audio/manifest.json')
-    .then((response) => (response.ok ? response.json() : null))
-    .then((manifest: { files?: string[] } | null) => {
-      localAudioFiles = new Set(manifest?.files ?? [])
-    })
-    .catch(() => {
-      localAudioFiles = new Set()
-    })
 }
 
 export function speechSupported(): boolean {
@@ -51,6 +45,7 @@ function playLocalAudio(url: string, text: string, rate: number): boolean {
     currentAudio.currentTime = 0
   }
   const audio = new Audio(url)
+  audio.preload = 'auto'
   audio.playbackRate = rate
   currentAudio = audio
   audio.play().catch(() => {
@@ -62,9 +57,11 @@ function playLocalAudio(url: string, text: string, rate: number): boolean {
 
 export function speakKorean(text: string, rate = 1): boolean {
   if (typeof window === 'undefined') return false
+  const now = performance.now()
+  if (now - lastPlayAt < playDebounceMs) return true
+  lastPlayAt = now
+
   const url = audioUrlFor(text)
-  if (localAudioFiles && url && localAudioFiles.has(url.slice(1))) {
-    return playLocalAudio(url, text, rate)
-  }
+  if (url) return playLocalAudio(url, text, rate)
   return speakWithSystem(text, rate)
 }

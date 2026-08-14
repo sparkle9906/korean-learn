@@ -1991,18 +1991,6 @@ input:focus-visible {
   box-shadow: var(--shadow-sm);
 }
 
-.recent-panel--expandable {
-  cursor: pointer;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.recent-panel--expandable:hover,
-.recent-panel--expandable:focus-visible {
-  border-color: var(--brand);
-  box-shadow: var(--shadow-md);
-  outline: none;
-}
-
 .activity-chart {
   display: flex;
   align-items: flex-end;
@@ -2094,11 +2082,12 @@ input:focus-visible {
 .recent-item {
   display: grid;
   grid-template-areas: "char roman zh category";
-  grid-template-columns: 68px minmax(0, 1fr) minmax(0, 1.2fr) auto;
+  grid-template-columns: 148px minmax(0, 1fr) minmax(0, 1.2fr) auto;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 4px;
+  height: 64px;
+  padding: 8px 4px;
   color: inherit;
   background: transparent;
   border: 0;
@@ -2113,15 +2102,18 @@ input:focus-visible {
   border-bottom: 0;
 }
 
-.recent-item:hover {
-  background: var(--surface-strong);
-}
-
 .recent-item__char {
   grid-area: char;
+  overflow: hidden;
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   font-size: 20px;
   font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-item__char--long {
+  font-size: 16px;
 }
 
 .recent-item__roman,
@@ -2145,6 +2137,11 @@ input:focus-visible {
 
 .recent-item .category-tag {
   grid-area: category;
+  justify-self: end;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .reset-zone {
@@ -2532,10 +2529,10 @@ input:focus-visible {
 
   .recent-item {
     grid-template-areas:
-      "char roman"
-      "char zh"
-      "char category";
-    grid-template-columns: 48px minmax(0, 1fr);
+      "char roman category"
+      "char zh category";
+    grid-template-columns: 148px minmax(0, 1fr) auto;
+    padding: 8px 4px;
     column-gap: 10px;
     row-gap: 3px;
   }
