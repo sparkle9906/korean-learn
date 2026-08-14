@@ -2093,18 +2093,28 @@ input:focus-visible {
 
 .recent-item {
   display: grid;
-  grid-template-areas: "char roman zh category play";
-  grid-template-columns: 68px minmax(0, 1fr) minmax(0, 1.2fr) auto auto;
+  grid-template-areas: "char roman zh category";
+  grid-template-columns: 68px minmax(0, 1fr) minmax(0, 1.2fr) auto;
   align-items: center;
   gap: 10px;
+  width: 100%;
   padding: 11px 4px;
+  color: inherit;
+  background: transparent;
+  border: 0;
   border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
   content-visibility: auto;
   contain-intrinsic-size: auto 56px;
 }
 
 .recent-item:last-child {
   border-bottom: 0;
+}
+
+.recent-item:hover {
+  background: var(--surface-strong);
 }
 
 .recent-item__char {
@@ -2135,10 +2145,6 @@ input:focus-visible {
 
 .recent-item .category-tag {
   grid-area: category;
-}
-
-.recent-item .play-button {
-  grid-area: play;
 }
 
 .reset-zone {
@@ -2526,9 +2532,10 @@ input:focus-visible {
 
   .recent-item {
     grid-template-areas:
-      "char roman play"
-      "char zh category";
-    grid-template-columns: 48px minmax(0, 1fr) auto;
+      "char roman"
+      "char zh"
+      "char category";
+    grid-template-columns: 48px minmax(0, 1fr);
     column-gap: 10px;
     row-gap: 3px;
   }

@@ -3,7 +3,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
-import { PlayButton, SectionHeader } from './Shared'
+import { SectionHeader } from './Shared'
+import { speakKorean } from '../lib/speech'
 import type { QuizMode, Word } from '../types'
 
 const modeNames: Record<QuizMode, string> = {
@@ -36,14 +37,26 @@ function activityBars(activity: Record<string, number>, days = 14): { key: strin
 }
 
 function LearnedWordItem({ word, voiceRate, notify }: { word: Word; voiceRate: number; notify: (message: string) => void }) {
+  const playWord = () => {
+    const ok = speakKorean(word.ko, voiceRate)
+    if (!ok) notify('当前浏览器不支持语音合成')
+  }
+
   return (
-    <div className="recent-item" key={word.id}>
+    <motion.button
+      type="button"
+      className="recent-item"
+      aria-label={`播放 ${word.ko} 发音`}
+      title={`播放 ${word.ko} 发音`}
+      onClick={playWord}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
+    >
       <span className="recent-item__char">{word.ko}</span>
       <span className="recent-item__roman">{word.roman}</span>
       <span className="recent-item__zh">{word.zh}</span>
       <span className="category-tag">{word.category}</span>
-      <PlayButton text={word.ko} rate={voiceRate} size="sm" label={`播放 ${word.ko} 发音`} onUnavailable={notify} />
-    </div>
+    </motion.button>
   )
 }
 
