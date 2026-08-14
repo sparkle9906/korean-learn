@@ -89,16 +89,16 @@ export function ProgressView() {
       const word = wordById(id)
       return word ? [word] : []
     })
-  const canExpandLearnedWords = learnedWords.length > 6
-  const visibleLearnedWords = learnedWords.slice(0, 6)
+  const canExpandLearnedWords = learnedWords.length > 3
+  const visibleLearnedWords = learnedWords.slice(0, 3)
   const favoritePhrases = [...progress.favoritePhrases]
     .reverse()
     .flatMap((id) => {
       const phrase = phraseById(id)
       return phrase ? [phrase] : []
     })
-  const canExpandFavoritePhrases = favoritePhrases.length > 6
-  const visibleFavoritePhrases = favoritePhrases.slice(0, 6)
+  const canExpandFavoritePhrases = favoritePhrases.length > 3
+  const visibleFavoritePhrases = favoritePhrases.slice(0, 3)
   const recentDialog =
     recentListOpen === 'words'
       ? {
