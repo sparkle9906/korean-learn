@@ -1991,6 +1991,19 @@ input:focus-visible {
   box-shadow: var(--shadow-sm);
 }
 
+.recent-panel--expandable {
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.recent-panel--expandable:hover,
+.recent-panel--expandable:focus-visible,
+.recent-panel--expanded {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
 .activity-chart {
   display: flex;
   align-items: flex-end;

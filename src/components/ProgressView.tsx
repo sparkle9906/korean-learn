@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, BookOpenCheck, CheckCircle2, Flame, RotateCcw, Trash2, X } from 'lucide-react'
+import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, Minimize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
 import { PlayButton, SectionHeader } from './Shared'
@@ -38,6 +38,7 @@ function activityBars(activity: Record<string, number>, days = 14): { key: strin
 export function ProgressView() {
   const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints, voiceRate, notify } = useApp()
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [showAllLearnedWords, setShowAllLearnedWords] = useState(false)
 
   const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
   const totalCorrect = Object.values(progress.history).reduce((sum, item) => sum + item.correct, 0)
@@ -52,6 +53,12 @@ export function ProgressView() {
       const word = wordById(id)
       return word ? [word] : []
     })
+  const canExpandLearnedWords = learnedWords.length > 6
+  const visibleLearnedWords = showAllLearnedWords ? learnedWords : learnedWords.slice(0, 6)
+
+  const toggleLearnedWords = () => {
+    if (canExpandLearnedWords) setShowAllLearnedWords((visible) => !visible)
+  }
 
   return (
     <div className="view-stack">
@@ -131,21 +138,36 @@ export function ProgressView() {
         </section>
       </div>
 
-      <section className="recent-panel">
+      <motion.section
+        className={`recent-panel ${canExpandLearnedWords ? 'recent-panel--expandable' : ''} ${showAllLearnedWords ? 'recent-panel--expanded' : ''}`}
+        layout
+        tabIndex={canExpandLearnedWords ? 0 : undefined}
+        aria-expanded={canExpandLearnedWords ? showAllLearnedWords : undefined}
+        aria-label={canExpandLearnedWords ? `最近学过的单词，已显示 ${visibleLearnedWords.length} 个，共 ${learnedWords.length} 个。点击展开或收起。` : undefined}
+        onClick={toggleLearnedWords}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            toggleLearnedWords()
+          }
+        }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+      >
         <SectionHeader
-          eyebrow="LEARNED"
-          title="已学习的单词"
-          description="按最近学习排序，点击按钮可播放发音。"
+          eyebrow="RECENT"
+          title="最近学过的单词"
+          description="按最近学习时间排列。"
           action={
             <span className="count-badge">
               <CheckCircle2 size={14} />
-              {learnedWords.length} 条记录
+              {canExpandLearnedWords ? (showAllLearnedWords ? <Minimize2 size={14} aria-hidden="true" /> : <Maximize2 size={14} aria-hidden="true" />) : null}
+              {visibleLearnedWords.length} / {learnedWords.length} 条记录
             </span>
           }
         />
-        {learnedWords.length ? (
+        {visibleLearnedWords.length ? (
           <div className="recent-list">
-            {learnedWords.map((word) => (
+            {visibleLearnedWords.map((word) => (
               <div className="recent-item" key={word.id}>
                 <span className="recent-item__char">{word.ko}</span>
                 <span className="recent-item__roman">{word.roman}</span>
@@ -161,7 +183,7 @@ export function ProgressView() {
             <p>去单词页标几个词为已学吧。</p>
           </div>
         )}
-      </section>
+      </motion.section>
 
       <section className="reset-zone">
         <div>
