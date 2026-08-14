@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, Minimize2, RotateCcw, Trash2, X } from 'lucide-react'
+import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
 import { PlayButton, SectionHeader } from './Shared'
-import type { QuizMode } from '../types'
+import type { QuizMode, Word } from '../types'
 
 const modeNames: Record<QuizMode, string> = {
   'word-ko-zh': '看韩语选意思',
@@ -35,10 +35,22 @@ function activityBars(activity: Record<string, number>, days = 14): { key: strin
   return bars
 }
 
+function LearnedWordItem({ word, voiceRate, notify }: { word: Word; voiceRate: number; notify: (message: string) => void }) {
+  return (
+    <div className="recent-item" key={word.id}>
+      <span className="recent-item__char">{word.ko}</span>
+      <span className="recent-item__roman">{word.roman}</span>
+      <span className="recent-item__zh">{word.zh}</span>
+      <span className="category-tag">{word.category}</span>
+      <PlayButton text={word.ko} rate={voiceRate} size="sm" label={`播放 ${word.ko} 发音`} onUnavailable={notify} />
+    </div>
+  )
+}
+
 export function ProgressView() {
   const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints, voiceRate, notify } = useApp()
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [showAllLearnedWords, setShowAllLearnedWords] = useState(false)
+  const [learnedWordsOpen, setLearnedWordsOpen] = useState(false)
 
   const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
   const totalCorrect = Object.values(progress.history).reduce((sum, item) => sum + item.correct, 0)
@@ -54,11 +66,16 @@ export function ProgressView() {
       return word ? [word] : []
     })
   const canExpandLearnedWords = learnedWords.length > 6
-  const visibleLearnedWords = showAllLearnedWords ? learnedWords : learnedWords.slice(0, 6)
+  const visibleLearnedWords = learnedWords.slice(0, 6)
 
-  const toggleLearnedWords = () => {
-    if (canExpandLearnedWords) setShowAllLearnedWords((visible) => !visible)
-  }
+  useEffect(() => {
+    if (!learnedWordsOpen) return undefined
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLearnedWordsOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [learnedWordsOpen])
 
   return (
     <div className="view-stack">
@@ -138,20 +155,20 @@ export function ProgressView() {
         </section>
       </div>
 
-      <motion.section
-        className={`recent-panel ${canExpandLearnedWords ? 'recent-panel--expandable' : ''} ${showAllLearnedWords ? 'recent-panel--expanded' : ''}`}
-        layout
+      <section
+        className={`recent-panel ${canExpandLearnedWords ? 'recent-panel--expandable' : ''}`}
         tabIndex={canExpandLearnedWords ? 0 : undefined}
-        aria-expanded={canExpandLearnedWords ? showAllLearnedWords : undefined}
-        aria-label={canExpandLearnedWords ? `最近学过的单词，已显示 ${visibleLearnedWords.length} 个，共 ${learnedWords.length} 个。点击展开或收起。` : undefined}
-        onClick={toggleLearnedWords}
+        aria-label={canExpandLearnedWords ? `最近学过的单词，已显示 ${visibleLearnedWords.length} 个，共 ${learnedWords.length} 个。点击查看全部。` : undefined}
+        onClick={(event) => {
+          if (event.target instanceof Element && event.target.closest('button')) return
+          if (canExpandLearnedWords) setLearnedWordsOpen(true)
+        }}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            toggleLearnedWords()
+            if (canExpandLearnedWords) setLearnedWordsOpen(true)
           }
         }}
-        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
       >
         <SectionHeader
           eyebrow="RECENT"
@@ -160,7 +177,7 @@ export function ProgressView() {
           action={
             <span className="count-badge">
               <CheckCircle2 size={14} />
-              {canExpandLearnedWords ? (showAllLearnedWords ? <Minimize2 size={14} aria-hidden="true" /> : <Maximize2 size={14} aria-hidden="true" />) : null}
+              {canExpandLearnedWords ? <Maximize2 size={14} aria-hidden="true" /> : null}
               {visibleLearnedWords.length} / {learnedWords.length} 条记录
             </span>
           }
@@ -168,13 +185,7 @@ export function ProgressView() {
         {visibleLearnedWords.length ? (
           <div className="recent-list">
             {visibleLearnedWords.map((word) => (
-              <div className="recent-item" key={word.id}>
-                <span className="recent-item__char">{word.ko}</span>
-                <span className="recent-item__roman">{word.roman}</span>
-                <span className="recent-item__zh">{word.zh}</span>
-                <span className="category-tag">{word.category}</span>
-                <PlayButton text={word.ko} rate={voiceRate} size="sm" label={`播放 ${word.ko} 发音`} onUnavailable={notify} />
-              </div>
+              <LearnedWordItem key={word.id} word={word} voiceRate={voiceRate} notify={notify} />
             ))}
           </div>
         ) : (
@@ -183,7 +194,7 @@ export function ProgressView() {
             <p>去单词页标几个词为已学吧。</p>
           </div>
         )}
-      </motion.section>
+      </section>
 
       <section className="reset-zone">
         <div>
@@ -197,6 +208,43 @@ export function ProgressView() {
       </section>
 
       <AnimatePresence>
+        {learnedWordsOpen ? (
+          <motion.div
+            className="learned-words-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLearnedWordsOpen(false)}
+          >
+            <motion.section
+              className="learned-words-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label="全部已学习的单词"
+              initial={{ opacity: 0, scale: 0.94, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 16 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header className="learned-words-dialog__header">
+                <div>
+                  <p className="eyebrow">LEARNED</p>
+                  <h2>已学习的单词</h2>
+                  <p>{learnedWords.length} 条记录，按最近学习时间排列。</p>
+                </div>
+                <button type="button" className="icon-button" aria-label="关闭已学习单词" title="关闭" onClick={() => setLearnedWordsOpen(false)}>
+                  <X size={18} />
+                </button>
+              </header>
+              <div className="learned-words-dialog__list">
+                {learnedWords.map((word) => (
+                  <LearnedWordItem key={word.id} word={word} voiceRate={voiceRate} notify={notify} />
+                ))}
+              </div>
+            </motion.section>
+          </motion.div>
+        ) : null}
         {confirmOpen ? (
           <motion.div
             className="modal-backdrop"
