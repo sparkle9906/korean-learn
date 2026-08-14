@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowRight,
@@ -14,6 +14,7 @@ import {
 import type { QuizMode } from '../types'
 import { useApp } from '../lib/AppContext'
 import { speakKorean } from '../lib/speech'
+import { getStoredValue, removeStoredValue, setStoredValue } from '../lib/storage'
 import { compoundConsonants, compoundVowels, consonants, vowels } from '../data/hangul'
 import { words, wordById } from '../data/words'
 import { ProgressRing } from './Shared'
@@ -37,6 +38,51 @@ type Question = {
 }
 
 type Phase = 'setup' | 'quiz' | 'done'
+
+const PRACTICE_SESSION_KEY = 'korea-learn-practice-session'
+
+type PracticeSession = {
+  mode: PracticeMode
+  count: number
+  questions: Question[]
+  index: number
+  selectedId: string | null
+  answered: boolean
+  correctCount: number
+}
+
+function parsePracticeSession(raw: string | null): PracticeSession | null {
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as Partial<PracticeSession>
+    const validModes: PracticeMode[] = ['word-ko-zh', 'word-zh-ko', 'listening', 'hangul', 'review']
+    if (!parsed || !parsed.mode || !validModes.includes(parsed.mode)) return null
+    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) return null
+    const count = Number(parsed.count)
+    const index = Number(parsed.index)
+    if (!Number.isInteger(count) || count <= 0) return null
+    if (!Number.isInteger(index) || index < 0 || index >= parsed.questions.length) return null
+    return {
+      mode: parsed.mode,
+      count,
+      questions: parsed.questions,
+      index,
+      selectedId: typeof parsed.selectedId === 'string' ? parsed.selectedId : null,
+      answered: Boolean(parsed.answered),
+      correctCount: Number.isFinite(Number(parsed.correctCount)) ? Math.max(0, Number(parsed.correctCount)) : 0,
+    }
+  } catch {
+    return null
+  }
+}
+
+function loadSavedSession(): PracticeSession | null {
+  try {
+    return parsePracticeSession(window.localStorage.getItem(PRACTICE_SESSION_KEY))
+  } catch {
+    return null
+  }
+}
 
 const modeMeta: Record<PracticeMode, { title: string; description: string; icon: typeof BookOpenCheck }> = {
   'word-ko-zh': { title: '看韩语选意思', description: '看到单词，选出对应的中文。', icon: BookOpenCheck },
@@ -109,16 +155,72 @@ function buildQuestions(mode: PracticeMode, count: number, learnedIds: string[])
 
 export function PracticeView() {
   const { progress, recordPractice, reviewWords, voiceRate, notify } = useApp()
-  const [mode, setMode] = useState<PracticeMode>('word-ko-zh')
-  const [count, setCount] = useState(10)
-  const [phase, setPhase] = useState<Phase>('setup')
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [index, setIndex] = useState(0)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [answered, setAnswered] = useState(false)
-  const [correctCount, setCorrectCount] = useState(0)
+  const [savedSession] = useState(() => loadSavedSession())
+  const [mode, setMode] = useState<PracticeMode>(savedSession?.mode ?? 'word-ko-zh')
+  const [count, setCount] = useState(savedSession?.count ?? 10)
+  const [phase, setPhase] = useState<Phase>(savedSession ? 'quiz' : 'setup')
+  const [questions, setQuestions] = useState<Question[]>(savedSession?.questions ?? [])
+  const [index, setIndex] = useState(savedSession?.index ?? 0)
+  const [selectedId, setSelectedId] = useState<string | null>(savedSession?.selectedId ?? null)
+  const [answered, setAnswered] = useState(savedSession?.answered ?? false)
+  const [correctCount, setCorrectCount] = useState(savedSession?.correctCount ?? 0)
+  const sessionRef = useRef<PracticeSession | null>(null)
+  const appliedSessionRef = useRef(false)
+  const phaseRef = useRef<Phase>(phase)
 
   const learnedIds = useMemo(() => Object.keys(progress.learnedWords), [progress.learnedWords])
+
+  phaseRef.current = phase
+
+  useEffect(() => {
+    sessionRef.current =
+      phase === 'quiz' && questions.length
+        ? { mode, count, questions, index, selectedId, answered, correctCount }
+        : null
+  })
+
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      const raw = await getStoredValue(PRACTICE_SESSION_KEY)
+      if (!active || appliedSessionRef.current || phaseRef.current !== 'setup') return
+      const session = parsePracticeSession(raw)
+      if (!session) return
+      appliedSessionRef.current = true
+      setMode(session.mode)
+      setCount(session.count)
+      setQuestions(session.questions)
+      setIndex(session.index)
+      setSelectedId(session.selectedId)
+      setAnswered(session.answered)
+      setCorrectCount(session.correctCount)
+      setPhase('quiz')
+    })()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const session = sessionRef.current
+    if (session) void setStoredValue(PRACTICE_SESSION_KEY, JSON.stringify(session))
+  }, [mode, count, questions, index, selectedId, answered, correctCount, phase])
+
+  useEffect(() => {
+    if (phase === 'done') void removeStoredValue(PRACTICE_SESSION_KEY)
+  }, [phase])
+
+  useEffect(() => {
+    const persist = () => {
+      const session = sessionRef.current
+      if (session) void setStoredValue(PRACTICE_SESSION_KEY, JSON.stringify(session))
+    }
+    window.addEventListener('pagehide', persist)
+    return () => {
+      window.removeEventListener('pagehide', persist)
+      persist()
+    }
+  }, [])
 
   useEffect(() => {
     if (phase === 'quiz' && mode === 'listening' && questions[index]?.audioText) {
@@ -129,6 +231,7 @@ export function PracticeView() {
 
   const start = (nextMode = mode, nextCount = count) => {
     if (nextMode === 'review' && learnedIds.length === 0) return
+    appliedSessionRef.current = true
     setMode(nextMode)
     setCount(nextCount)
     setQuestions(buildQuestions(nextMode, nextCount, learnedIds))
@@ -139,14 +242,21 @@ export function PracticeView() {
     setPhase('quiz')
   }
 
+  const playAnswerAudio = (question: Question) => {
+    if (mode === 'hangul') {
+      const name = question.options.find((option) => option.id === question.correctId)?.label
+      return name ? speakKorean(name, voiceRate) : false
+    }
+    const text = question.audioText ?? wordById(question.correctId)?.ko
+    return text ? speakKorean(text, voiceRate) : false
+  }
+
   const answer = (optionId: string) => {
     if (answered) return
     setSelectedId(optionId)
     setAnswered(true)
-    if (mode === 'hangul') {
-      const option = questions[index].options.find((item) => item.id === optionId)
-      if (option) speakKorean(option.label, voiceRate)
-    }
+    const ok = playAnswerAudio(questions[index])
+    if (!ok) notify('当前浏览器不支持语音合成')
     if (optionId === questions[index].correctId) setCorrectCount((value) => value + 1)
   }
 
