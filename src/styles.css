@@ -2165,6 +2165,7 @@ input:focus-visible {
   white-space: normal;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .recent-item--phrase .recent-item__roman,
