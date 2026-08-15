@@ -364,7 +364,6 @@ export function PracticeView() {
                   </div>
                 ) : null}
               </div>
-              <p>每次 5–15 题，答完立刻知道对错，全部记录保存在本机。</p>
             </div>
 
             <div className="mode-grid">
@@ -571,9 +570,7 @@ export function PracticeView() {
                     <ArrowRight size={15} />
                   </button>
                 </motion.div>
-              ) : (
-                <p className="quiz-hint">点击选项作答，也可以按数字键 1–4。</p>
-              )}
+              ) : null}
             </motion.div>
           </AnimatePresence>
         </section>
