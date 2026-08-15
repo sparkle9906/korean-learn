@@ -20,7 +20,7 @@ import { words, wordById } from '../data/words'
 import { ProgressRing } from './Shared'
 import type { HangulLetter, Word } from '../types'
 
-type PracticeMode = QuizMode | 'review'
+type PracticeMode = QuizMode
 type PracticeSource = 'all' | 'learned'
 
 type Option = {
@@ -57,7 +57,7 @@ function parsePracticeSession(raw: string | null): PracticeSession | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as Partial<PracticeSession>
-    const validModes: PracticeMode[] = ['word-ko-zh', 'word-zh-ko', 'listening', 'hangul', 'review']
+    const validModes: PracticeMode[] = ['word-ko-zh', 'word-zh-ko', 'listening', 'hangul']
     if (!parsed || !parsed.mode || !validModes.includes(parsed.mode)) return null
     if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) return null
     const count = Number(parsed.count)
@@ -92,7 +92,6 @@ const modeMeta: Record<PracticeMode, { title: string; description: string; icon:
   'word-zh-ko': { title: '看意思选韩语', description: '看到中文，选出正确的韩语单词。', icon: ListChecks },
   listening: { title: '听音选意', description: '只听发音，选出你听到的单词。', icon: Headphones },
   hangul: { title: '谚文认读', description: '看到字母，选出正确的名称。', icon: Grid3X3 },
-  review: { title: '复习已学', description: '只复习你标为已学的单词。', icon: Sparkles },
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -150,17 +149,14 @@ function buildQuestions(mode: PracticeMode, count: number, learnedIds: string[],
       .slice(0, count)
       .map((letter) => buildLetterQuestion(letter, pool))
   }
-  const pool =
-    mode === 'review' || source === 'learned'
-      ? words.filter((word) => learnedIds.includes(word.id))
-      : words
+  const pool = source === 'learned' ? words.filter((word) => learnedIds.includes(word.id)) : words
   return shuffle(pool)
     .slice(0, count)
     .map((word) => buildWordQuestion(mode, word, pool))
 }
 
 export function PracticeView() {
-  const { progress, recordPractice, reviewWords, voiceRate, notify } = useApp()
+  const { progress, recordPractice, voiceRate, notify } = useApp()
   const [savedSession] = useState(() => loadSavedSession())
   const [mode, setMode] = useState<PracticeMode>(savedSession?.mode ?? 'word-ko-zh')
   const [count, setCount] = useState(savedSession?.count ?? 10)
@@ -238,7 +234,7 @@ export function PracticeView() {
   }, [phase, mode, index, questions, voiceRate, notify])
 
   const start = (nextMode = mode, nextCount = count) => {
-    const needsLearned = nextMode === 'review' || (source === 'learned' && nextMode !== 'hangul')
+    const needsLearned = source === 'learned' && nextMode !== 'hangul'
     if (needsLearned && learnedIds.length === 0) return
     appliedSessionRef.current = true
     setMode(nextMode)
@@ -276,9 +272,7 @@ export function PracticeView() {
       setAnswered(false)
       return
     }
-    const finalMode: QuizMode = mode === 'review' ? 'word-ko-zh' : mode
-    recordPractice(finalMode, correctCount, questions.length)
-    if (mode === 'review') reviewWords(questions.map((question) => question.id))
+    recordPractice(mode, correctCount, questions.length)
     setPhase('done')
   }
 
@@ -299,7 +293,7 @@ export function PracticeView() {
 
   const accuracy = questions.length ? correctCount / questions.length : 0
   const current = questions[index]
-  const needsLearned = (m: PracticeMode) => m === 'review' || (source === 'learned' && m !== 'hangul')
+  const needsLearned = (m: PracticeMode) => source === 'learned' && m !== 'hangul'
   const effectiveCount = needsLearned(mode) && learnedIds.length > 0 ? Math.min(count, learnedIds.length) : count
 
   return (
@@ -334,7 +328,7 @@ export function PracticeView() {
                     whileTap={disabled ? undefined : { scale: 0.97 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
                   >
-                    <span className={`mode-card__icon mode-card__icon--${item === 'listening' ? 'green' : item === 'hangul' ? 'blue' : item === 'review' ? 'coral' : 'ink'}`}>
+                    <span className={`mode-card__icon mode-card__icon--${item === 'listening' ? 'green' : item === 'hangul' ? 'blue' : 'ink'}`}>
                       <Icon size={20} />
                     </span>
                     <strong>{modeMeta[item].title}</strong>
@@ -344,7 +338,7 @@ export function PracticeView() {
               })}
             </div>
 
-            {mode !== 'hangul' && mode !== 'review' ? (
+            {mode !== 'hangul' ? (
               <div className="practice-count">
                 <span>题目范围</span>
                 <div className="segmented" role="group" aria-label="题目范围">
