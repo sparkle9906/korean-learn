@@ -272,6 +272,11 @@ export function PracticeView() {
     setPhase('quiz')
   }
 
+  const clearResume = () => {
+    setResumeSession(null)
+    void removeStoredValue(PRACTICE_SESSION_KEY)
+  }
+
   const exitQuiz = () => {
     if (questions.length && index >= 0 && index < questions.length) {
       const session: PracticeSession = { mode, source, count, questions, index, selectedId, answered, correctCount }
@@ -344,18 +349,29 @@ export function PracticeView() {
             </div>
 
             {resumeSession ? (
-              <button type="button" className="resume-banner" onClick={resume}>
-                <span className="resume-banner__icon">
-                  <RotateCcw size={18} />
-                </span>
-                <span className="resume-banner__body">
-                  <strong>继续上一次练习</strong>
-                  <small>
-                    {modeMeta[resumeSession.mode].title} · 第 {resumeSession.index + 1} / {resumeSession.questions.length} 题
-                  </small>
-                </span>
-                <ArrowRight size={18} />
-              </button>
+              <div className="resume-banner">
+                <button type="button" className="resume-banner__main" onClick={resume}>
+                  <span className="resume-banner__icon">
+                    <RotateCcw size={18} />
+                  </span>
+                  <span className="resume-banner__body">
+                    <strong>继续上一次练习</strong>
+                    <small>
+                      {modeMeta[resumeSession.mode].title} · 第 {resumeSession.index + 1} / {resumeSession.questions.length} 题
+                    </small>
+                  </span>
+                  <ArrowRight size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="resume-banner__close"
+                  aria-label="清除继续练习"
+                  title="清除"
+                  onClick={clearResume}
+                >
+                  <X size={16} />
+                </button>
+              </div>
             ) : null}
 
             <div className="mode-grid">
