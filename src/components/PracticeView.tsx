@@ -339,31 +339,31 @@ export function PracticeView() {
       {phase === 'setup' ? (
         <>
           <section className="practice-setup">
-            <div className="practice-setup__header">
-              <h2>选择一种练习方式</h2>
-              {resumeSession ? (
-                <div className="resume-chip">
-                  <button type="button" className="resume-chip__main" onClick={resume}>
-                    <RotateCcw size={14} />
-                    <span>继续上次练习</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="resume-chip__close"
-                    aria-label="清除继续练习"
-                    title="清除"
-                    onClick={clearResume}
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : null}
-            </div>
             <div className="practice-setup__intro">
               <span className="pill pill--green">
                 <Sparkles size={14} />
                 即时反馈
               </span>
+              <div className="practice-setup__header">
+                <h2>选择一种练习方式</h2>
+                {resumeSession ? (
+                  <div className="resume-chip">
+                    <button type="button" className="resume-chip__main" onClick={resume}>
+                      <RotateCcw size={14} />
+                      <span>继续上次练习</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="resume-chip__close"
+                      aria-label="清除继续练习"
+                      title="清除"
+                      onClick={clearResume}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
               <p>每次 5–15 题，答完立刻知道对错，全部记录保存在本机。</p>
             </div>
 
