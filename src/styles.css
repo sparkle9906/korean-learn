@@ -1662,27 +1662,6 @@ input:focus-visible {
   line-height: 1.4;
 }
 
-.practice-count {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  padding: 16px 18px;
-  background: var(--surface-strong);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.practice-count > span {
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.practice-count .button {
-  margin-left: auto;
-}
-
 .quiz-surface {
   display: flex;
   flex-direction: column;
@@ -2543,7 +2522,7 @@ input:focus-visible {
     width: 100%;
   }
 
-  .practice-count .button {
+  .practice-controls__start {
     width: 100%;
     margin-left: 0;
   }
@@ -2635,49 +2614,65 @@ input:focus-visible {
   }
 }
 
-.resume-banner {
+.practice-setup__header {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 10px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.resume-banner__main {
-  display: flex;
-  align-items: center;
-  gap: 13px;
+.practice-setup__intro {
   flex: 1;
   min-width: 0;
-  padding: 4px 6px;
-  color: var(--text);
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.16s ease, transform 0.16s ease;
 }
 
-.resume-banner__main:hover {
+.resume-chip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding: 3px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+}
+
+.resume-chip__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 680;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.16s ease;
+}
+
+.resume-chip__main:hover {
   background: var(--surface);
 }
 
-.resume-banner__main:active {
-  transform: scale(0.985);
+.resume-chip__main small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 560;
 }
 
-.resume-banner__close {
+.resume-chip__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
   color: var(--text-secondary);
   background: transparent;
   border: 0;
@@ -2685,38 +2680,40 @@ input:focus-visible {
   transition: background-color 0.16s ease, color 0.16s ease;
 }
 
-.resume-banner__close:hover {
+.resume-chip__close:hover {
   color: var(--text);
   background: var(--surface);
 }
 
-.resume-banner__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  color: var(--accent);
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-
-.resume-banner__body {
+.practice-controls {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 
-.resume-banner__body strong {
-  font-size: 15px;
-  font-weight: 760;
+.practice-controls__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
-.resume-banner__body small {
+.practice-controls__row > span {
   color: var(--text-secondary);
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.practice-controls__hint {
+  flex-basis: 100%;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+.practice-controls__start {
+  margin-left: auto;
 }

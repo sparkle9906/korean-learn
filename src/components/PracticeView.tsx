@@ -339,40 +339,36 @@ export function PracticeView() {
       {phase === 'setup' ? (
         <>
           <section className="practice-setup">
-            <div className="practice-setup__intro">
-              <span className="pill pill--green">
-                <Sparkles size={14} />
-                即时反馈
-              </span>
-              <h2>选择一种练习方式</h2>
-              <p>每次 5–15 题，答完立刻知道对错，全部记录保存在本机。</p>
-            </div>
-
-            {resumeSession ? (
-              <div className="resume-banner">
-                <button type="button" className="resume-banner__main" onClick={resume}>
-                  <span className="resume-banner__icon">
-                    <RotateCcw size={18} />
-                  </span>
-                  <span className="resume-banner__body">
-                    <strong>继续上一次练习</strong>
-                    <small>
-                      {modeMeta[resumeSession.mode].title} · 第 {resumeSession.index + 1} / {resumeSession.questions.length} 题
-                    </small>
-                  </span>
-                  <ArrowRight size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="resume-banner__close"
-                  aria-label="清除继续练习"
-                  title="清除"
-                  onClick={clearResume}
-                >
-                  <X size={16} />
-                </button>
+            <div className="practice-setup__header">
+              <div className="practice-setup__intro">
+                <span className="pill pill--green">
+                  <Sparkles size={14} />
+                  即时反馈
+                </span>
+                <h2>选择一种练习方式</h2>
+                <p>每次 5–15 题，答完立刻知道对错，全部记录保存在本机。</p>
               </div>
-            ) : null}
+              {resumeSession ? (
+                <div className="resume-chip">
+                  <button type="button" className="resume-chip__main" onClick={resume}>
+                    <RotateCcw size={14} />
+                    <span>继续上次练习</span>
+                    <small>
+                      第 {resumeSession.index + 1} / {resumeSession.questions.length} 题
+                    </small>
+                  </button>
+                  <button
+                    type="button"
+                    className="resume-chip__close"
+                    aria-label="清除继续练习"
+                    title="清除"
+                    onClick={clearResume}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : null}
+            </div>
 
             <div className="mode-grid">
               {(Object.keys(modeMeta) as PracticeMode[]).map((item) => {
@@ -399,53 +395,56 @@ export function PracticeView() {
               })}
             </div>
 
-            <div className="practice-count">
-              <span>题目范围</span>
-              <div className="segmented" role="group" aria-label="题目范围">
-                <button
-                  type="button"
-                  className={source === 'all' ? 'segmented__item segmented__item--active' : 'segmented__item'}
-                  onClick={() => setSource('all')}
-                >
-                  全部
-                </button>
-                <button
-                  type="button"
-                  className={source === 'learned' ? 'segmented__item segmented__item--active' : 'segmented__item'}
-                  onClick={() => setSource('learned')}
-                  disabled={!hasLearned(mode)}
-                >
-                  已学
-                </button>
-              </div>
-              {source === 'learned' && !hasLearned(mode) ? (
-                <span>{mode === 'hangul' ? '还没有已学谚文，先去谚文页标记' : '还没有已学单词，先去单词页标记'}</span>
-              ) : null}
-            </div>
-
-            <div className="practice-count">
-              <span>题目数量</span>
-              <div className="segmented" role="group" aria-label="题目数量">
-                {[5, 10, 15].map((item) => (
+            <div className="practice-controls">
+              <div className="practice-controls__row">
+                <span>题目范围</span>
+                <div className="segmented" role="group" aria-label="题目范围">
                   <button
-                    key={item}
                     type="button"
-                    className={count === item ? 'segmented__item segmented__item--active' : 'segmented__item'}
-                    onClick={() => setCount(item)}
+                    className={source === 'all' ? 'segmented__item segmented__item--active' : 'segmented__item'}
+                    onClick={() => setSource('all')}
                   >
-                    {item} 题
+                    全部
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    className={source === 'learned' ? 'segmented__item segmented__item--active' : 'segmented__item'}
+                    onClick={() => setSource('learned')}
+                    disabled={!hasLearned(mode)}
+                  >
+                    已学
+                  </button>
+                </div>
+                {source === 'learned' && !hasLearned(mode) ? (
+                  <span className="practice-controls__hint">
+                    {mode === 'hangul' ? '还没有已学谚文，先去谚文页标记' : '还没有已学单词，先去单词页标记'}
+                  </span>
+                ) : null}
               </div>
-              <button
-                type="button"
-                className="button button--primary"
-                onClick={() => start(mode, effectiveCount)}
-                disabled={needsLearned(mode)}
-              >
-                <ArrowRight size={16} />
-                开始练习
-              </button>
+              <div className="practice-controls__row">
+                <span>题目数量</span>
+                <div className="segmented" role="group" aria-label="题目数量">
+                  {[5, 10, 15].map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={count === item ? 'segmented__item segmented__item--active' : 'segmented__item'}
+                      onClick={() => setCount(item)}
+                    >
+                      {item} 题
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="button button--primary practice-controls__start"
+                  onClick={() => start(mode, effectiveCount)}
+                  disabled={needsLearned(mode)}
+                >
+                  <ArrowRight size={16} />
+                  开始练习
+                </button>
+              </div>
             </div>
           </section>
         </>
