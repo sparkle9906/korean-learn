@@ -2634,3 +2634,58 @@ input:focus-visible {
     -webkit-backdrop-filter: none;
   }
 }
+
+.resume-banner {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 14px 16px;
+  color: var(--text);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.resume-banner:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-strong);
+}
+
+.resume-banner:active {
+  transform: scale(0.985);
+}
+
+.resume-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.resume-banner__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.resume-banner__body strong {
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.resume-banner__body small {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
