@@ -1086,6 +1086,11 @@ input:focus-visible {
   box-shadow: var(--shadow-sm);
 }
 
+.segmented__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .picker-block {
   display: flex;
   flex-direction: column;

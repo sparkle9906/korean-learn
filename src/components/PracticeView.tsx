@@ -21,6 +21,7 @@ import { ProgressRing } from './Shared'
 import type { HangulLetter, Word } from '../types'
 
 type PracticeMode = QuizMode | 'review'
+type PracticeSource = 'all' | 'learned'
 
 type Option = {
   id: string
@@ -43,6 +44,7 @@ const PRACTICE_SESSION_KEY = 'korea-learn-practice-session'
 
 type PracticeSession = {
   mode: PracticeMode
+  source: PracticeSource
   count: number
   questions: Question[]
   index: number
@@ -64,6 +66,7 @@ function parsePracticeSession(raw: string | null): PracticeSession | null {
     if (!Number.isInteger(index) || index < 0 || index >= parsed.questions.length) return null
     return {
       mode: parsed.mode,
+      source: parsed.source === 'learned' ? 'learned' : 'all',
       count,
       questions: parsed.questions,
       index,
@@ -140,14 +143,17 @@ function buildLetterQuestion(letter: HangulLetter, pool: HangulLetter[]): Questi
   }
 }
 
-function buildQuestions(mode: PracticeMode, count: number, learnedIds: string[]): Question[] {
+function buildQuestions(mode: PracticeMode, count: number, learnedIds: string[], source: PracticeSource): Question[] {
   if (mode === 'hangul') {
     const pool = [...consonants, ...vowels, ...compoundConsonants, ...compoundVowels]
     return shuffle(pool)
       .slice(0, count)
       .map((letter) => buildLetterQuestion(letter, pool))
   }
-  const pool = mode === 'review' ? words.filter((word) => learnedIds.includes(word.id)) : words
+  const pool =
+    mode === 'review' || source === 'learned'
+      ? words.filter((word) => learnedIds.includes(word.id))
+      : words
   return shuffle(pool)
     .slice(0, count)
     .map((word) => buildWordQuestion(mode, word, pool))
@@ -158,6 +164,7 @@ export function PracticeView() {
   const [savedSession] = useState(() => loadSavedSession())
   const [mode, setMode] = useState<PracticeMode>(savedSession?.mode ?? 'word-ko-zh')
   const [count, setCount] = useState(savedSession?.count ?? 10)
+  const [source, setSource] = useState<PracticeSource>(savedSession?.source ?? 'all')
   const [phase, setPhase] = useState<Phase>(savedSession ? 'quiz' : 'setup')
   const [questions, setQuestions] = useState<Question[]>(savedSession?.questions ?? [])
   const [index, setIndex] = useState(savedSession?.index ?? 0)
@@ -175,7 +182,7 @@ export function PracticeView() {
   useEffect(() => {
     sessionRef.current =
       phase === 'quiz' && questions.length
-        ? { mode, count, questions, index, selectedId, answered, correctCount }
+        ? { mode, source, count, questions, index, selectedId, answered, correctCount }
         : null
   })
 
@@ -188,6 +195,7 @@ export function PracticeView() {
       if (!session) return
       appliedSessionRef.current = true
       setMode(session.mode)
+      setSource(session.source ?? 'all')
       setCount(session.count)
       setQuestions(session.questions)
       setIndex(session.index)
@@ -204,7 +212,7 @@ export function PracticeView() {
   useEffect(() => {
     const session = sessionRef.current
     if (session) void setStoredValue(PRACTICE_SESSION_KEY, JSON.stringify(session))
-  }, [mode, count, questions, index, selectedId, answered, correctCount, phase])
+  }, [mode, source, count, questions, index, selectedId, answered, correctCount, phase])
 
   useEffect(() => {
     if (phase === 'done') void removeStoredValue(PRACTICE_SESSION_KEY)
@@ -230,11 +238,12 @@ export function PracticeView() {
   }, [phase, mode, index, questions, voiceRate, notify])
 
   const start = (nextMode = mode, nextCount = count) => {
-    if (nextMode === 'review' && learnedIds.length === 0) return
+    const needsLearned = nextMode === 'review' || (source === 'learned' && nextMode !== 'hangul')
+    if (needsLearned && learnedIds.length === 0) return
     appliedSessionRef.current = true
     setMode(nextMode)
     setCount(nextCount)
-    setQuestions(buildQuestions(nextMode, nextCount, learnedIds))
+    setQuestions(buildQuestions(nextMode, nextCount, learnedIds, source))
     setIndex(0)
     setCorrectCount(0)
     setSelectedId(null)
@@ -290,6 +299,8 @@ export function PracticeView() {
 
   const accuracy = questions.length ? correctCount / questions.length : 0
   const current = questions[index]
+  const needsLearned = (m: PracticeMode) => m === 'review' || (source === 'learned' && m !== 'hangul')
+  const effectiveCount = needsLearned(mode) && learnedIds.length > 0 ? Math.min(count, learnedIds.length) : count
 
   return (
     <div className="view-stack practice-view">
@@ -308,7 +319,7 @@ export function PracticeView() {
             <div className="mode-grid">
               {(Object.keys(modeMeta) as PracticeMode[]).map((item) => {
                 const Icon = modeMeta[item].icon
-                const disabled = item === 'review' && learnedIds.length === 0
+                const disabled = needsLearned(item) && learnedIds.length === 0
                 return (
                   <motion.button
                     key={item}
@@ -333,6 +344,30 @@ export function PracticeView() {
               })}
             </div>
 
+            {mode !== 'hangul' && mode !== 'review' ? (
+              <div className="practice-count">
+                <span>题目范围</span>
+                <div className="segmented" role="group" aria-label="题目范围">
+                  <button
+                    type="button"
+                    className={source === 'all' ? 'segmented__item segmented__item--active' : 'segmented__item'}
+                    onClick={() => setSource('all')}
+                  >
+                    全部
+                  </button>
+                  <button
+                    type="button"
+                    className={source === 'learned' ? 'segmented__item segmented__item--active' : 'segmented__item'}
+                    onClick={() => setSource('learned')}
+                    disabled={learnedIds.length === 0}
+                  >
+                    已学
+                  </button>
+                </div>
+                {source === 'learned' && learnedIds.length === 0 ? <span>还没有已学单词，先去单词页标记</span> : null}
+              </div>
+            ) : null}
+
             <div className="practice-count">
               <span>题目数量</span>
               <div className="segmented" role="group" aria-label="题目数量">
@@ -350,11 +385,11 @@ export function PracticeView() {
               <button
                 type="button"
                 className="button button--primary"
-                onClick={() => start()}
-                disabled={mode === 'review' && learnedIds.length === 0}
+                onClick={() => start(mode, effectiveCount)}
+                disabled={needsLearned(mode) && learnedIds.length === 0}
               >
                 <ArrowRight size={16} />
-                开始 {count} 题
+                开始 {effectiveCount} 题
               </button>
             </div>
           </section>
