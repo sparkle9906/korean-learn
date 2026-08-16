@@ -532,6 +532,12 @@ input:focus-visible {
   transform: scale(0.97);
 }
 
+.button--sm {
+  gap: 5px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -909,6 +915,125 @@ input:focus-visible {
   color: var(--green);
   background: var(--green-soft);
   border-color: transparent;
+}
+
+.mini-chip--button {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  cursor: pointer;
+  transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.mini-chip--active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.word-carousel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.word-carousel__arrow {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--text-secondary);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.word-carousel__arrow:hover {
+  color: var(--text);
+  background: var(--surface-solid);
+}
+
+.word-carousel__stage {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  padding: 6px 4px 4px;
+  color: inherit;
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.16s ease;
+}
+
+.word-carousel__stage:hover {
+  background: var(--bg-deep);
+}
+
+.word-carousel__stage-inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.word-carousel__hangul {
+  max-width: 100%;
+  color: var(--text);
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.word-carousel__roman {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.word-carousel__meaning {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.word-carousel__speaker {
+  margin-top: 2px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.word-carousel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.word-carousel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.word-carousel__count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .task-card__phrase {

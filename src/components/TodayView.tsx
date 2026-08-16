@@ -1,20 +1,25 @@
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import {
   ArrowRight,
   BookOpenCheck,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   CircleDot,
   Clock3,
   Grid3X3,
   MessagesSquare,
   Repeat2,
   Sparkles,
+  Volume2,
 } from 'lucide-react'
 import type { ViewId } from '../types'
 import { dayOfYear, useApp } from '../lib/AppContext'
 import { compoundConsonants, compoundVowels, consonants, vowels } from '../data/hangul'
 import { words } from '../data/words'
 import { phrases } from '../data/phrases'
+import { speakKorean } from '../lib/speech'
 import { PlayButton, ProgressRing, SectionHeader, StatChip } from './Shared'
 
 const letterCount = consonants.length + vowels.length + compoundConsonants.length + compoundVowels.length
@@ -36,6 +41,14 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
   const wordOfDay = words[day % words.length]
   const phraseOfDay = phrases[day % phrases.length]
   const todayWords = Array.from({ length: 5 }, (_, index) => words[(day + index) % words.length])
+  const [wordIndex, setWordIndex] = useState(0)
+  const todayWord = todayWords[Math.min(wordIndex, todayWords.length - 1)]
+  const playTodayWord = () => {
+    const ok = speakKorean(todayWord.ko, voiceRate)
+    if (!ok) notify('当前浏览器不支持语音合成')
+  }
+  const showPrevWord = () => setWordIndex((index) => (index - 1 + todayWords.length) % todayWords.length)
+  const showNextWord = () => setWordIndex((index) => (index + 1) % todayWords.length)
 
   const totalAnswered = Object.values(progress.history).reduce((sum, item) => sum + item.total, 0)
   const totalCorrect = Object.values(progress.history).reduce((sum, item) => sum + item.correct, 0)
@@ -116,17 +129,57 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
           <div className="task-card__body">
             <span className="task-card__kicker">第 2 步</span>
             <h3>学习 5 个单词</h3>
-            <div className="task-card__chips">
-              {todayWords.map((word) => (
-                <span key={word.id} className={`mini-chip ${progress.learnedWords[word.id] ? 'mini-chip--done' : ''}`}>
+            <div className="word-carousel">
+              <button type="button" className="word-carousel__arrow" aria-label="上一个单词" onClick={showPrevWord}>
+                <ChevronLeft size={18} />
+              </button>
+              <button type="button" className="word-carousel__stage" title="点击播放发音" onClick={playTodayWord}>
+                <motion.div
+                  key={todayWord.id}
+                  className="word-carousel__stage-inner"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                >
+                  <span className="word-carousel__hangul">{todayWord.ko}</span>
+                  <span className="word-carousel__roman">{todayWord.roman}</span>
+                  <span className="word-carousel__meaning">{todayWord.zh}</span>
+                  <Volume2 size={14} className="word-carousel__speaker" aria-hidden="true" />
+                </motion.div>
+              </button>
+              <button type="button" className="word-carousel__arrow" aria-label="下一个单词" onClick={showNextWord}>
+                <ChevronRight size={18} />
+              </button>
+            </div>
+            <div className="word-carousel__chips">
+              {todayWords.map((word, index) => (
+                <button
+                  key={word.id}
+                  type="button"
+                  className={`mini-chip mini-chip--button ${index === wordIndex ? 'mini-chip--active' : ''} ${progress.learnedWords[word.id] ? 'mini-chip--done' : ''}`}
+                  title={word.roman}
+                  aria-label={`切换到 ${word.ko}（${word.roman}）`}
+                  aria-current={index === wordIndex ? 'true' : undefined}
+                  onClick={() => setWordIndex(index)}
+                >
                   {word.ko}
-                </span>
+                </button>
               ))}
             </div>
-            <p>{learnedToday} / 5 已完成</p>
+            <div className="word-carousel__footer">
+              <button
+                type="button"
+                className={`button button--sm ${progress.learnedWords[todayWord.id] ? 'button--success' : 'button--secondary'}`}
+                onClick={() => toggleWordLearned(todayWord.id)}
+              >
+                <CheckCircle2 size={14} />
+                {progress.learnedWords[todayWord.id] ? '已学会' : '标为已学'}
+              </button>
+              <p className="word-carousel__count">{learnedToday} / 5 已完成</p>
+            </div>
           </div>
           <button type="button" className="text-button" onClick={() => onNavigate('words')}>
-            去背词 <ArrowRight size={15} />
+            更多单词 <ArrowRight size={15} />
           </button>
         </motion.article>
 
