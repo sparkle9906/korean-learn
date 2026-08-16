@@ -16,7 +16,7 @@
 - React 19、TypeScript、Vite
 - Motion、Lucide React
 - Capacitor 8（iOS）
-- `@capacitor/preferences`：iOS 端使用原生 Preferences / UserDefaults 保存进度、主题和语速；Web 端使用 `localStorage`
+- `@capacitor/preferences`：iOS 端使用原生 Preferences / UserDefaults 保存进度、主题和语速；Web 端使用 `IndexedDB`（并保留 `localStorage` 作为兼容缓存）
 
 ## 环境要求
 
@@ -131,7 +131,7 @@ npm run generate-audio -- --scope=phrases --concurrency=4
 
 ## 持久化说明
 
-- **Web**：学习进度、主题和语速保存在浏览器 `localStorage`。
+- **Web**：学习进度、主题和语速保存在浏览器 `IndexedDB`，`localStorage` 仅作为同步缓存与旧版本数据迁移来源。
 - **iOS**：同一数据还会保存到 Capacitor Preferences（原生 UserDefaults），因此 App 正常关闭、重新打开或覆盖更新后仍会保留。
 - 卸载 App、换设备或清除浏览器网站数据会清除本地数据。跨设备同步需要后续接入账号与云端存储。
 
