@@ -335,6 +335,9 @@ export const words: Word[] = [
   { id: 'w318', ko: '지루하다', roman: 'jiruhada', zh: '乏味', category: '描述' },
   { id: 'w319', ko: '무섭다', roman: 'museopda', zh: '可怕', category: '描述' },
   { id: 'w320', ko: '편하다', roman: 'pyeonhada', zh: '舒服', category: '描述' },
+  { id: 'w321', ko: '딸기', roman: 'ttalgi', zh: '草莓', category: '食物' },
+  { id: 'w322', ko: '포도', roman: 'podo', zh: '葡萄', category: '食物' },
+  { id: 'w323', ko: '수박', roman: 'subak', zh: '西瓜', category: '食物' },
 ]
 
 export function wordById(id: string): Word | undefined {
