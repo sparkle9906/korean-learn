@@ -29,7 +29,7 @@ export const words: Word[] = [
   { id: 'w22', ko: '커피', roman: 'keopi', zh: '咖啡', category: '食物' },
   { id: 'w23', ko: '차', roman: 'cha', zh: '茶', category: '食物' },
   { id: 'w24', ko: '빵', roman: 'ppang', zh: '面包', category: '食物' },
-  { id: 'w25', ko: '사과', roman: 'sagwa', zh: '苹果', category: '食物' },
+  { id: 'w25', ko: '바나나', roman: 'banana', zh: '香蕉', category: '食物' },
   { id: 'w26', ko: '김치', roman: 'gimchi', zh: '泡菜', category: '食物' },
   { id: 'w27', ko: '고기', roman: 'gogi', zh: '肉', category: '食物' },
   { id: 'w28', ko: '국수', roman: 'guksu', zh: '面条', category: '食物' },
