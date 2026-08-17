@@ -1,22 +1,22 @@
 # 한걸음 · 韩语入门
 
-一个面向初学者的韩语学习应用，同时支持 **Web** 与 **iOS**。项目以 React + TypeScript + Vite 编写，iOS 端通过 Capacitor 将同一套 Web 界面打包为原生 App。
+一个面向初学者的韩语学习应用，同时支持 **Web、iOS 与 Android**。项目以 React + TypeScript + Vite 编写，通过 Capacitor 将同一套 Web 界面打包为 iOS / Android 原生 App。
 
 ## 功能概览
 
 - 韩文字母、元音、辅音与拼读练习
-- 250 个高频韩语单词与 160 条常用短语
+- 323 个高频韩语单词与 194 条常用短语
 - Karina(Aespa) 语音音频播放与可调发音速度（默认 `1.0x`）
 - 每日学习、复习测验、学习进度与连续学习统计
 - 浅色、深色、跟随系统三种外观
-- iPhone 安全区域适配、底部 Tab 导航与原生学习进度持久化
+- 移动端安全区域适配、底部 Tab 导航与原生学习进度持久化
 
 ## 技术栈
 
 - React 19、TypeScript、Vite
 - Motion、Lucide React
-- Capacitor 8（iOS）
-- `@capacitor/preferences`：iOS 端使用原生 Preferences / UserDefaults 保存进度、主题和语速；Web 端使用 `IndexedDB`（并保留 `localStorage` 作为兼容缓存）
+- Capacitor 8（iOS / Android）
+- `@capacitor/preferences`：原生 App 端使用 Capacitor Preferences（iOS UserDefaults / Android SharedPreferences）保存进度、主题和语速；Web 端使用 `IndexedDB`（并保留 `localStorage` 作为兼容缓存）
 
 ## 环境要求
 
@@ -31,6 +31,12 @@
 - Xcode（已安装 iOS SDK）
 - 可用的 Apple 开发者签名团队
 - 连接并信任的 iPhone，且已开启**开发者模式**（如需真机安装）
+
+### Android
+
+- Android Studio（含 Android SDK 与 Gradle）
+- JDK 17 或更高版本（`scripts/android-build.ps1` 默认使用 JDK 21）
+- 已开启 USB 调试的 Android 手机，或已创建的模拟器
 
 ## 安装依赖
 
@@ -118,11 +124,64 @@ xcrun devicectl device process launch \
 
 > `build/`、`dist/` 和 `ios/App/App/public/` 都是构建或同步产物，不需要提交。
 
+## Android 构建与安装
+
+### 1. 同步 Web 构建产物至 Android 工程
+
+```bash
+npm run android:sync
+```
+
+该命令会先执行 Web 构建，再把 `dist/` 同步到 Capacitor Android 工程。
+
+### 2. 使用 Android Studio 构建
+
+```bash
+npm run android:open
+```
+
+在 Android Studio 中打开 `android/` 工程：
+
+1. 等待 Gradle 同步完成；
+2. 选择已连接的 Android 设备或模拟器；
+3. 点击 Run（`▶`）构建并安装。
+
+### 命令行构建 APK
+
+```bash
+npm run build && npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+生成的 Debug APK 位于：
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Windows 一键构建（可选）
+
+在 Windows 上可直接运行：
+
+```bash
+npm run android:build
+```
+
+该命令执行 `scripts/android-build.ps1`：构建前端 → 同步 Android → 用 Gradle 构建 Debug APK，并启动一个本地下载服务器。手机与电脑处于同一局域网时，访问终端打印的地址（如 `http://192.168.x.x:8888/app-debug.apk`）即可下载安装。
+
+> `android/app/build/`、`android/app/src/main/assets/public/` 等均为构建或同步产物，不会提交。
+
 ## 音频资源
 
-`public/audio/` 内包含应用运行需要的已生成语音音频与音频索引，会提交到仓库，确保 Web 和 iOS 打包后可直接使用。
+`public/audio/` 内包含应用运行需要的已生成语音音频与音频索引，会提交到仓库，确保 Web、iOS 和 Android 打包后可直接使用。
 
-如需重新生成音频，在项目根目录创建 `.env.local` 并配置所需密钥。`.env.local` 仅存放本机私密配置，已被 Git 忽略，**绝不能提交**。
+如需重新生成音频，在项目根目录创建 `.env.local` 并配置：
+
+- `FISH_API_KEY`（必填）：Fish Audio 的 API Key
+- `FISH_REFERENCE_ID`（可选）：参考音色 ID（不配置时使用内置默认音色）
+- `FISH_MODEL`（可选）：模型名称（默认 `s2.1-pro-free`）
+
+`.env.local` 仅存放本机私密配置，已被 Git 忽略，**绝不能提交**。
 
 ```bash
 npm run generate-audio -- --scope=words --concurrency=4
@@ -132,17 +191,19 @@ npm run generate-audio -- --scope=phrases --concurrency=4
 ## 持久化说明
 
 - **Web**：学习进度、主题和语速保存在浏览器 `IndexedDB`，`localStorage` 仅作为同步缓存与旧版本数据迁移来源。
-- **iOS**：同一数据还会保存到 Capacitor Preferences（原生 UserDefaults），因此 App 正常关闭、重新打开或覆盖更新后仍会保留。
+- **iOS / Android**：同一数据还会保存到 Capacitor Preferences（iOS UserDefaults / Android SharedPreferences），因此 App 正常关闭、重新打开或覆盖更新后仍会保留。
 - 卸载 App、换设备或清除浏览器网站数据会清除本地数据。跨设备同步需要后续接入账号与云端存储。
 
 ## 版本控制约定
 
-仓库会提交源码、iOS 工程、图标和应用音频资源；下列可再生或私密文件不提交：
+仓库会提交源码、iOS / Android 工程、图标和应用音频资源；下列可再生或私密文件不提交：
 
 - `node_modules/`
 - `dist/`
 - `build/`
 - `ios/App/App/public/`
+- `android/app/build/`
+- `android/app/src/main/assets/public/`
 - `*.tsbuildinfo`
 - `.env.local`
 - `.DS_Store`
