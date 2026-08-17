@@ -603,12 +603,13 @@ input:focus-visible {
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
-.icon-button:hover {
-  color: var(--text);
-  background: var(--surface-solid);
+@media (hover: hover) {
+  .icon-button:hover {
+    color: var(--text);
+    background: var(--surface-solid);
+  }
 }
 
 .play-button--sm {
@@ -616,13 +617,15 @@ input:focus-visible {
   height: 30px;
 }
 
-.learned-check--on {
+.icon-button.learned-check--on,
+.icon-button.learned-check--on:hover {
   color: #fff;
   background: var(--green);
   border-color: transparent;
 }
 
-.favorite-button--on {
+.icon-button.favorite-button--on,
+.icon-button.favorite-button--on:hover {
   color: var(--brand);
   background: var(--brand-soft);
   border-color: rgba(221, 63, 68, 0.28);
@@ -968,11 +971,6 @@ input:focus-visible {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.16s ease;
-}
-
-.word-carousel__stage:hover {
-  background: var(--bg-deep);
 }
 
 .word-carousel__stage-inner {

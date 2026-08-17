@@ -29,7 +29,7 @@ export function PlayButton({
       title={label}
       onClick={handlePlay}
       whileTap={{ scale: 0.9 }}
-      transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+      transition={{ duration: 0.08 }}
     >
       <Volume2 size={size === 'sm' ? 15 : 18} strokeWidth={2.2} />
     </motion.button>
@@ -56,7 +56,7 @@ export function LearnedCheck({
         onToggle()
       }}
       whileTap={{ scale: 0.9 }}
-      transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+      transition={{ duration: 0.08 }}
     >
       <Check size={17} strokeWidth={2.6} />
     </motion.button>
@@ -83,7 +83,7 @@ export function FavoriteButton({
         onToggle()
       }}
       whileTap={{ scale: 0.9 }}
-      transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+      transition={{ duration: 0.08 }}
     >
       <Heart size={17} fill={favorite ? 'currentColor' : 'none'} strokeWidth={2.2} />
     </motion.button>
