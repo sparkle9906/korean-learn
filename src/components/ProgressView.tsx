@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, BookOpenCheck, Flame, Heart, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
+import { BarChart3, BookOpenCheck, CheckCircle2, Flame, Maximize2, RotateCcw, Trash2, X } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordById } from '../data/words'
 import { phraseById } from '../data/phrases'
@@ -72,7 +72,7 @@ function RecentEntryItem({
 }
 
 export function ProgressView() {
-  const { progress, resetProgress, streak, masteredWordCount, favoritePhraseCount, todayPoints, voiceRate, notify } = useApp()
+  const { progress, resetProgress, streak, masteredWordCount, learnedPhraseCount, todayPoints, voiceRate, notify } = useApp()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [recentListOpen, setRecentListOpen] = useState<'words' | 'phrases' | null>(null)
 
@@ -91,14 +91,14 @@ export function ProgressView() {
     })
   const canExpandLearnedWords = learnedWords.length > 3
   const visibleLearnedWords = learnedWords.slice(0, 3)
-  const favoritePhrases = [...progress.favoritePhrases]
+  const learnedPhrases = [...progress.learnedPhrases]
     .reverse()
     .flatMap((id) => {
       const phrase = phraseById(id)
       return phrase ? [phrase] : []
     })
-  const canExpandFavoritePhrases = favoritePhrases.length > 3
-  const visibleFavoritePhrases = favoritePhrases.slice(0, 3)
+  const canExpandLearnedPhrases = learnedPhrases.length > 3
+  const visibleLearnedPhrases = learnedPhrases.slice(0, 3)
   const recentDialog =
     recentListOpen === 'words'
       ? {
@@ -111,11 +111,11 @@ export function ProgressView() {
         }
       : recentListOpen === 'phrases'
         ? {
-            eyebrow: 'FAVORITES',
-            title: '已收藏的短语',
-            description: `${favoritePhrases.length} 条记录，按最近收藏时间排列。`,
-            closeLabel: '关闭已收藏短语',
-            entries: favoritePhrases,
+            eyebrow: 'LEARNED',
+            title: '已学习的短语',
+            description: `${learnedPhrases.length} 条记录，按最近学习时间排列。`,
+            closeLabel: '关闭已学习短语',
+            entries: learnedPhrases,
             variant: 'phrase' as const,
           }
         : null
@@ -146,8 +146,8 @@ export function ProgressView() {
             <span className="stat-tile__label">已学单词</span>
           </div>
           <div className="stat-tile">
-            <span className="stat-tile__value">{favoritePhraseCount}</span>
-            <span className="stat-tile__label">收藏短语</span>
+            <span className="stat-tile__value">{learnedPhraseCount}</span>
+            <span className="stat-tile__label">已学习短语</span>
           </div>
           <div className="stat-tile">
             <span className="stat-tile__value">{totalSessions}</span>
@@ -242,15 +242,15 @@ export function ProgressView() {
 
       <section className="recent-panel">
         <SectionHeader
-          eyebrow="FAVORITES"
-          title="已收藏的短语"
-          description="按最近收藏时间排列。"
+          eyebrow="LEARNED"
+          title="已学习的短语"
+          description="按最近学习时间排列。"
           action={
-            canExpandFavoritePhrases ? (
+            canExpandLearnedPhrases ? (
               <button
                 type="button"
                 className="icon-button recent-panel__expand"
-                aria-label="查看全部已收藏短语"
+                aria-label="查看全部已学习短语"
                 title="查看全部"
                 onClick={() => setRecentListOpen('phrases')}
               >
@@ -259,16 +259,16 @@ export function ProgressView() {
             ) : null
           }
         />
-        {visibleFavoritePhrases.length ? (
+        {visibleLearnedPhrases.length ? (
           <div className="recent-list">
-            {visibleFavoritePhrases.map((phrase) => (
+            {visibleLearnedPhrases.map((phrase) => (
               <RecentEntryItem key={phrase.id} entry={phrase} variant="phrase" voiceRate={voiceRate} notify={notify} />
             ))}
           </div>
         ) : (
           <div className="empty-state empty-state--compact">
-            <Heart size={24} />
-            <p>去短语页收藏常用表达吧。</p>
+            <CheckCircle2 size={24} />
+            <p>去短语页标记已学习的常用表达吧。</p>
           </div>
         )}
       </section>
@@ -276,7 +276,7 @@ export function ProgressView() {
       <section className="reset-zone">
         <div>
           <strong>重置全部学习记录</strong>
-          <p>会清空已学单词、收藏、练习历史和今日点数，且无法撤销。</p>
+          <p>会清空已学单词、已学习短语、练习历史和今日点数，且无法撤销。</p>
         </div>
         <button type="button" className="button button--danger" onClick={() => setConfirmOpen(true)}>
           <Trash2 size={16} />

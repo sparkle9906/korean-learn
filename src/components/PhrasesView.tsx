@@ -4,11 +4,11 @@ import { MessageSquareQuote, Search } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { phraseCategories, phrases } from '../data/phrases'
 import type { PhraseCategory } from '../types'
-import { FavoriteButton, PlayButton, SectionHeader } from './Shared'
+import { LearnedCheck, PlayButton, SectionHeader } from './Shared'
 import { speakKorean } from '../lib/speech'
 
 export function PhrasesView() {
-  const { progress, favoritePhraseCount, togglePhraseFavorite, voiceRate, notify } = useApp()
+  const { progress, learnedPhraseCount, togglePhraseLearned, voiceRate, notify } = useApp()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<PhraseCategory | '全部'>('全部')
 
@@ -55,7 +55,7 @@ export function PhrasesView() {
             {filtered.length} 句
           </span>
           <span>
-            <strong>{favoritePhraseCount} 句收藏</strong>
+            <strong>{learnedPhraseCount} 句已学习</strong>
             <small>整句记诵更自然</small>
           </span>
         </div>
@@ -64,17 +64,17 @@ export function PhrasesView() {
       <SectionHeader
         eyebrow="PHRASES"
         title={category === '全部' ? '常用短语' : `${category}短语`}
-        description="点击卡片播放整句发音，收藏后可以在练习里反复听。"
+        description="点击卡片播放整句发音；标为已学习，记录每句已掌握的表达。"
       />
 
       {filtered.length ? (
         <div className="phrase-list">
           {filtered.map((phrase) => {
-            const favorite = progress.favoritePhrases.includes(phrase.id)
+            const learned = progress.learnedPhrases.includes(phrase.id)
             return (
               <motion.article
                 key={phrase.id}
-                className={`phrase-card ${favorite ? 'phrase-card--favorite' : ''}`}
+                className={`phrase-card ${learned ? 'phrase-card--learned' : ''}`}
                 layout
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -89,10 +89,10 @@ export function PhrasesView() {
                   <div className="phrase-card__top">
                     <span className="category-tag">{phrase.category}</span>
                     <div className="phrase-card__actions">
-                      <FavoriteButton
-                        favorite={favorite}
-                        label={favorite ? '取消收藏' : '收藏短语'}
-                        onToggle={() => togglePhraseFavorite(phrase.id)}
+                      <LearnedCheck
+                        learned={learned}
+                        label={learned ? '取消已学习标记' : '标为已学习'}
+                        onToggle={() => togglePhraseLearned(phrase.id)}
                       />
                       <PlayButton text={phrase.ko} rate={voiceRate} size="sm" label="播放发音" onUnavailable={notify} />
                     </div>

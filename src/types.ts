@@ -41,9 +41,15 @@ export type PracticeHistory = {
   sessions: number
 }
 
+export type DailyPlan = {
+  wordIds: string[]
+  phraseId: string
+}
+
 export type StoredProgress = {
   learnedWords: Record<string, number>
-  favoritePhrases: string[]
+  learnedPhrases: string[]
+  dailyPlans: Record<string, DailyPlan>
   learnedLetters: string[]
   reviewsByDate: Record<string, string[]>
   history: Record<QuizMode, PracticeHistory>

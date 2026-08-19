@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import {
   ArrowRight,
@@ -24,23 +24,73 @@ import { PlayButton, ProgressRing, SectionHeader, StatChip } from './Shared'
 
 const letterCount = consonants.length + vowels.length + compoundConsonants.length + compoundVowels.length
 
+function prioritizeUnlearned<T extends { id: string }>(
+  items: readonly T[],
+  startIndex: number,
+  count: number,
+  isLearned: (item: T) => boolean,
+): T[] {
+  if (items.length === 0 || count <= 0) return []
+
+  const start = ((startIndex % items.length) + items.length) % items.length
+  const ordered = Array.from({ length: items.length }, (_, offset) => items[(start + offset) % items.length])
+  const unlearned = ordered.filter((item) => !isLearned(item))
+  const learned = ordered.filter(isLearned)
+
+  return [...unlearned, ...learned].slice(0, Math.min(count, items.length))
+}
+
 export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }) {
   const {
     progress,
     toggleWordLearned,
+    togglePhraseLearned,
     dueWords,
     streak,
     todayPoints,
     masteredWordCount,
-    favoritePhraseCount,
+    storageReady,
+    todayKey,
+    setDailyPlan,
+    learnedPhraseCount,
     voiceRate,
     notify,
   } = useApp()
 
   const day = dayOfYear()
-  const wordOfDay = words[day % words.length]
-  const phraseOfDay = phrases[day % phrases.length]
-  const todayWords = Array.from({ length: 5 }, (_, index) => words[(day + index) % words.length])
+  const dailyPlan = progress.dailyPlans[todayKey]
+  // Generate a plan once per date. Persisting it prevents today's card from
+  // switching to another unlearned item after the current one is marked learned.
+  const generatedWords = useMemo(
+    () => prioritizeUnlearned(words, day, 5, (word) => Boolean(progress.learnedWords[word.id])),
+    [day, storageReady],
+  )
+  const generatedPhrase = useMemo(
+    () =>
+      prioritizeUnlearned(phrases, day, 1, (phrase) => progress.learnedPhrases.includes(phrase.id))[0] ??
+      phrases[day % phrases.length],
+    [day, storageReady],
+  )
+  const todayWords = useMemo(() => {
+    if (!dailyPlan) return generatedWords
+    const plannedWords = dailyPlan.wordIds
+      .map((id) => words.find((word) => word.id === id))
+      .filter((word): word is (typeof words)[number] => Boolean(word))
+    return plannedWords.length > 0 ? plannedWords : generatedWords
+  }, [dailyPlan, generatedWords])
+  const wordOfDay = todayWords[0] ?? words[day % words.length]
+  const phraseOfDay = useMemo(() => {
+    if (!dailyPlan?.phraseId) return generatedPhrase
+    return phrases.find((phrase) => phrase.id === dailyPlan.phraseId) ?? generatedPhrase
+  }, [dailyPlan, generatedPhrase])
+
+  useEffect(() => {
+    if (!storageReady || dailyPlan) return
+    setDailyPlan(todayKey, {
+      wordIds: generatedWords.map((word) => word.id),
+      phraseId: generatedPhrase.id,
+    })
+  }, [dailyPlan, generatedPhrase, generatedWords, setDailyPlan, storageReady, todayKey])
   const [wordIndex, setWordIndex] = useState(0)
   const todayWord = todayWords[Math.min(wordIndex, todayWords.length - 1)]
   const playTodayWord = () => {
@@ -55,6 +105,11 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
   const accuracy = totalAnswered ? totalCorrect / totalAnswered : 0
   const totalSessions = Object.values(progress.history).reduce((sum, item) => sum + item.sessions, 0)
   const learnedToday = todayWords.filter((word) => progress.learnedWords[word.id]).length
+  const phraseLearned = progress.learnedPhrases.includes(phraseOfDay.id)
+  const playPhraseOfDay = () => {
+    const ok = speakKorean(phraseOfDay.ko, voiceRate)
+    if (!ok) notify('当前浏览器不支持语音合成')
+  }
 
   return (
     <div className="view-stack">
@@ -94,6 +149,7 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
           <StatChip icon={<Clock3 size={15} />}>{todayPoints} 今日点数</StatChip>
           <StatChip icon={<Repeat2 size={15} />}>{streak} 天连续</StatChip>
           <StatChip icon={<BookOpenCheck size={15} />}>{masteredWordCount} 已学单词</StatChip>
+          <StatChip icon={<MessagesSquare size={15} />}>{learnedPhraseCount} 已学短语</StatChip>
         </div>
       </section>
 
@@ -184,7 +240,18 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
         </motion.article>
 
         <motion.article
-          className="task-card"
+          className="task-card task-card--phrase"
+          role="button"
+          tabIndex={0}
+          aria-label={`播放今日短语：${phraseOfDay.ko}`}
+          onClick={playPhraseOfDay}
+          onKeyDown={(event) => {
+            if (event.target !== event.currentTarget) return
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              playPhraseOfDay()
+            }
+          }}
           whileHover={{ y: -2 }}
           transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
         >
@@ -199,7 +266,25 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
           </div>
           <div className="task-card__actions">
             <PlayButton text={phraseOfDay.ko} rate={voiceRate} size="sm" label="播放今日短语" onUnavailable={notify} />
-            <button type="button" className="text-button" onClick={() => onNavigate('phrases')}>
+            <button
+              type="button"
+              className={`button button--sm ${phraseLearned ? 'button--success' : 'button--secondary'}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                togglePhraseLearned(phraseOfDay.id)
+              }}
+            >
+              <CheckCircle2 size={14} />
+              {phraseLearned ? '已学会' : '标为已学'}
+            </button>
+            <button
+              type="button"
+              className="text-button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onNavigate('phrases')
+              }}
+            >
               更多短语 <ArrowRight size={15} />
             </button>
           </div>
@@ -228,8 +313,8 @@ export function TodayView({ onNavigate }: { onNavigate: (view: ViewId) => void }
           <span className="stat-tile__label">已学单词</span>
         </div>
         <div className="stat-tile">
-          <span className="stat-tile__value">{favoritePhraseCount}</span>
-          <span className="stat-tile__label">收藏短语</span>
+          <span className="stat-tile__value">{learnedPhraseCount}</span>
+          <span className="stat-tile__label">已学短语</span>
         </div>
         <div className="stat-tile">
           <span className="stat-tile__value">{totalSessions}</span>

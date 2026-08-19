@@ -174,7 +174,9 @@ export function PracticeView() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [answered, setAnswered] = useState(false)
   const [correctCount, setCorrectCount] = useState(0)
+  const [isAdvancing, setIsAdvancing] = useState(false)
   const sessionRef = useRef<PracticeSession | null>(null)
+  const advancingRef = useRef(false)
   const appliedSessionRef = useRef(false)
   const phaseRef = useRef<Phase>(phase)
 
@@ -184,6 +186,12 @@ export function PracticeView() {
   const needsLearned = (m: PracticeMode) => source === 'learned' && !hasLearned(m)
 
   phaseRef.current = phase
+
+  useEffect(() => {
+    if (phase === 'quiz') return
+    advancingRef.current = false
+    setIsAdvancing(false)
+  }, [phase])
 
   useEffect(() => {
     sessionRef.current =
@@ -297,6 +305,10 @@ export function PracticeView() {
 
   const answer = (optionId: string) => {
     if (answered) return
+    // A newly selected answer starts a new question interaction, so it is now
+    // safe to accept another Next action after the previous transition.
+    advancingRef.current = false
+    setIsAdvancing(false)
     setSelectedId(optionId)
     setAnswered(true)
     const ok = playAnswerAudio(questions[index])
@@ -305,6 +317,12 @@ export function PracticeView() {
   }
 
   const next = () => {
+    // React state updates are batched, so two very quick taps can otherwise
+    // enqueue two index increments before `answered` is reset.
+    if (!answered || advancingRef.current) return
+    advancingRef.current = true
+    setIsAdvancing(true)
+
     if (index < questions.length - 1) {
       setIndex((value) => value + 1)
       setSelectedId(null)
@@ -565,7 +583,7 @@ export function PracticeView() {
                           : ''}
                     </p>
                   </div>
-                  <button type="button" className="button button--primary" onClick={next}>
+                  <button type="button" className="button button--primary" onClick={next} disabled={isAdvancing}>
                     {index === questions.length - 1 ? '查看结果' : '下一题'}
                     <ArrowRight size={15} />
                   </button>
