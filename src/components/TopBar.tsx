@@ -1,4 +1,5 @@
-import { CalendarDays, Laptop, Moon, Play, Sun } from 'lucide-react'
+import { CalendarDays, Laptop, Moon, Play, SlidersHorizontal, Sun } from 'lucide-react'
+import { useState } from 'react'
 import type { Theme, ViewId } from '../types'
 import { formatDate, useApp } from '../lib/AppContext'
 
@@ -28,7 +29,8 @@ export function TopBar({
   canScrollToTop?: boolean
   onScrollToTop?: () => void
 }) {
-  const { streak, theme, setTheme, todayPoints } = useApp()
+  const { streak, theme, setTheme, todayPoints, voiceRate, setVoiceRate, notify } = useApp()
+  const [mobileSpeedOpen, setMobileSpeedOpen] = useState(false)
   const meta = viewMeta[activeView]
 
   return (
@@ -64,6 +66,37 @@ export function TopBar({
               </button>
             )
           })}
+        </div>
+        <div className="topbar__speed">
+          <button
+            type="button"
+            className={`topbar__speed-toggle ${mobileSpeedOpen ? 'topbar__speed-toggle--active' : ''}`}
+            aria-label="调节发音速度"
+            aria-expanded={mobileSpeedOpen}
+            title="发音速度"
+            onClick={() => setMobileSpeedOpen((open) => !open)}
+          >
+            <SlidersHorizontal size={17} />
+          </button>
+          {mobileSpeedOpen ? (
+            <label className="topbar__speed-popover">
+              <span>发音速度</span>
+              <input
+                type="range"
+                min="0.6"
+                max="1.25"
+                step="0.05"
+                value={voiceRate}
+                aria-label="发音速度"
+                onChange={(event) => setVoiceRate(Number(event.target.value))}
+                onDoubleClick={() => {
+                  setVoiceRate(1)
+                  notify('发音速度已重置为 1.00x')
+                }}
+              />
+              <output>{voiceRate.toFixed(2)}x</output>
+            </label>
+          ) : null}
         </div>
         <span className="topbar__date">
           <CalendarDays size={15} />

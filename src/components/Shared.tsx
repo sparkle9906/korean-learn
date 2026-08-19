@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Check, Heart, Volume2 } from 'lucide-react'
+import { Check, Volume2 } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
 import { speakKorean } from '../lib/speech'
 
@@ -59,33 +59,6 @@ export function LearnedCheck({
       transition={{ duration: 0.08 }}
     >
       <Check size={17} strokeWidth={2.6} />
-    </motion.button>
-  )
-}
-
-export function FavoriteButton({
-  favorite,
-  onToggle,
-  label,
-}: {
-  favorite: boolean
-  onToggle: () => void
-  label: string
-}) {
-  return (
-    <motion.button
-      type="button"
-      className={`icon-button favorite-button ${favorite ? 'favorite-button--on' : ''}`}
-      aria-label={label}
-      title={label}
-      onClick={(event) => {
-        event.stopPropagation()
-        onToggle()
-      }}
-      whileTap={{ scale: 0.9 }}
-      transition={{ duration: 0.08 }}
-    >
-      <Heart size={17} fill={favorite ? 'currentColor' : 'none'} strokeWidth={2.2} />
     </motion.button>
   )
 }

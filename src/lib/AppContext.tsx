@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { QuizMode, StoredProgress, Theme } from '../types'
+import type { DailyPlan, QuizMode, StoredProgress, Theme } from '../types'
 import { wordById } from '../data/words'
 import { getStoredValue, migrateLegacyStudyStorage, removeStoredValue, setStoredValue } from './storage'
 
 const PROGRESS_KEY = 'korea-learn-progress-v1'
 const THEME_KEY = 'korea-learn-theme'
 const RATE_KEY = 'korea-learn-rate'
+const VOICE_RATE_MIN = 0.6
+const VOICE_RATE_MAX = 1.25
 
 type ToastState = { id: number; message: string }
 
@@ -14,17 +16,19 @@ type AppContextValue = {
   setTheme: (theme: Theme) => void
   progress: StoredProgress
   toggleWordLearned: (id: string) => void
-  togglePhraseFavorite: (id: string) => void
+  togglePhraseLearned: (id: string) => void
   learnLetter: (char: string) => void
   recordPractice: (mode: QuizMode, correct: number, total: number) => void
   reviewWords: (ids: string[]) => void
   resetProgress: () => void
   streak: number
   todayKey: string
+  storageReady: boolean
+  setDailyPlan: (date: string, plan: DailyPlan) => void
   dueWords: string[]
   todayPoints: number
   masteredWordCount: number
-  favoritePhraseCount: number
+  learnedPhraseCount: number
   voiceRate: number
   setVoiceRate: (rate: number) => void
   toast: ToastState | null
@@ -35,7 +39,8 @@ const emptyHistory = { correct: 0, total: 0, sessions: 0 }
 
 const emptyProgress: StoredProgress = {
   learnedWords: {},
-  favoritePhrases: [],
+  learnedPhrases: [],
+  dailyPlans: {},
   learnedLetters: [],
   reviewsByDate: {},
   history: {
@@ -63,10 +68,33 @@ function shiftDays(date: Date, days: number): Date {
 function normalizeProgress(raw: string | null): StoredProgress {
   try {
     if (!raw) return emptyProgress
-    const parsed = JSON.parse(raw) as Partial<StoredProgress>
+    const parsed = JSON.parse(raw) as Partial<StoredProgress> & { favoritePhrases?: unknown }
+    const { favoritePhrases, learnedPhrases, dailyPlans: rawDailyPlans, ...rest } = parsed
+    const migratedPhrases = Array.isArray(learnedPhrases)
+      ? learnedPhrases.filter((id): id is string => typeof id === 'string')
+      : Array.isArray(favoritePhrases)
+        ? favoritePhrases.filter((id): id is string => typeof id === 'string')
+        : []
+    const dailyPlans =
+      rawDailyPlans && typeof rawDailyPlans === 'object'
+        ? Object.fromEntries(
+            Object.entries(rawDailyPlans as Record<string, unknown>).flatMap(([date, value]) => {
+              if (!value || typeof value !== 'object') return []
+              const plan = value as Partial<DailyPlan>
+              const wordIds = Array.isArray(plan.wordIds)
+                ? plan.wordIds.filter((id): id is string => typeof id === 'string')
+                : []
+              const phraseId = typeof plan.phraseId === 'string' ? plan.phraseId : ''
+              if (wordIds.length === 0 && !phraseId) return []
+              return [[date, { wordIds, phraseId } satisfies DailyPlan]]
+            }),
+          )
+        : {}
     return {
       ...emptyProgress,
-      ...parsed,
+      ...rest,
+      learnedPhrases: migratedPhrases,
+      dailyPlans,
       history: { ...emptyProgress.history, ...(parsed.history ?? {}) },
     }
   } catch {
@@ -97,6 +125,10 @@ function resolvedTheme(theme: Theme): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+function clampVoiceRate(rate: number): number {
+  return Math.min(VOICE_RATE_MAX, Math.max(VOICE_RATE_MIN, rate))
+}
+
 function loadRate(): number {
   let stored = 0
   try {
@@ -104,7 +136,7 @@ function loadRate(): number {
   } catch {
     return 1
   }
-  if (Number.isFinite(stored) && stored >= 0.5 && stored <= 1.5) return stored
+  if (Number.isFinite(stored) && stored >= 0.5 && stored <= 1.5) return clampVoiceRate(stored)
   return 1
 }
 
@@ -113,7 +145,7 @@ const AppContext = createContext<AppContextValue | null>(null)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(loadTheme)
   const [progress, setProgress] = useState<StoredProgress>(loadProgress)
-  const [voiceRate, setVoiceRate] = useState<number>(loadRate)
+  const [voiceRate, setVoiceRateState] = useState<number>(loadRate)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [storageReady, setStorageReady] = useState(false)
   const hydratedRef = useRef(false)
@@ -132,7 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setProgress(normalizeProgress(storedProgress))
       if (storedTheme === 'system' || storedTheme === 'light' || storedTheme === 'dark') setTheme(storedTheme)
       const rate = Number(storedRate)
-      if (Number.isFinite(rate) && rate >= 0.5 && rate <= 1.5) setVoiceRate(rate)
+      if (Number.isFinite(rate) && rate >= 0.5 && rate <= 1.5) setVoiceRateState(clampVoiceRate(rate))
       hydratedRef.current = true
       setStorageReady(true)
     })()
@@ -206,13 +238,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const togglePhraseFavorite = useCallback((id: string) => {
+  const togglePhraseLearned = useCallback((id: string) => {
     setProgress((current) => {
-      const favoritePhrases = current.favoritePhrases.includes(id)
-        ? current.favoritePhrases.filter((phraseId) => phraseId !== id)
-        : [...current.favoritePhrases, id]
-      return { ...current, favoritePhrases }
+      const learnedPhrases = current.learnedPhrases.includes(id)
+        ? current.learnedPhrases.filter((phraseId) => phraseId !== id)
+        : [...current.learnedPhrases, id]
+      return { ...current, learnedPhrases }
     })
+  }, [])
+
+  const setDailyPlan = useCallback((date: string, plan: DailyPlan) => {
+    setProgress((current) => {
+      if (current.dailyPlans[date]) return current
+      return { ...current, dailyPlans: { ...current.dailyPlans, [date]: plan } }
+    })
+  }, [])
+
+  const setVoiceRate = useCallback((rate: number) => {
+    if (!Number.isFinite(rate)) return
+    setVoiceRateState(clampVoiceRate(rate))
   }, [])
 
   const learnLetter = useCallback((char: string) => {
@@ -290,24 +334,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const todayPoints = progress.activity[todayKey] ?? 0
   const masteredWordCount = Object.keys(progress.learnedWords).length
-  const favoritePhraseCount = progress.favoritePhrases.length
+  const learnedPhraseCount = progress.learnedPhrases.length
 
   const value: AppContextValue = {
     theme,
     setTheme,
     progress,
     toggleWordLearned,
-    togglePhraseFavorite,
+    togglePhraseLearned,
     learnLetter,
     recordPractice,
     reviewWords,
     resetProgress,
     streak,
     todayKey,
+    storageReady,
+    setDailyPlan,
     dueWords,
     todayPoints,
     masteredWordCount,
-    favoritePhraseCount,
+    learnedPhraseCount,
     voiceRate,
     setVoiceRate,
     toast,

@@ -451,6 +451,62 @@ input:focus-visible {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
 }
 
+/* On phones the desktop sidebar is a tab bar, so expose a compact speed control here. */
+.topbar__speed {
+  position: relative;
+  display: none;
+}
+
+.topbar__speed-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--text-secondary);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.topbar__speed-toggle--active {
+  color: var(--text);
+  background: var(--surface-solid);
+  border-color: var(--border-strong);
+}
+
+.topbar__speed-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: auto minmax(118px, 1fr) 44px;
+  align-items: center;
+  gap: 9px;
+  width: min(250px, calc(100vw - 32px));
+  padding: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+}
+
+.topbar__speed-popover input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.topbar__speed-popover output {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .topbar__date,
 .topbar__points,
 .topbar__streak {
@@ -624,12 +680,6 @@ input:focus-visible {
   border-color: transparent;
 }
 
-.icon-button.favorite-button--on,
-.icon-button.favorite-button--on:hover {
-  color: var(--brand);
-  background: var(--brand-soft);
-  border-color: rgba(221, 63, 68, 0.28);
-}
 
 .pill {
   display: inline-flex;
@@ -809,8 +859,8 @@ input:focus-visible {
 }
 
 .today-hero__stats {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 22px;
   padding-top: 14px;
@@ -820,6 +870,8 @@ input:focus-visible {
 .stat-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 0;
   gap: 7px;
   padding: 6px 10px;
   color: var(--text-secondary);
@@ -828,6 +880,7 @@ input:focus-visible {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .task-grid {
@@ -846,6 +899,15 @@ input:focus-visible {
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow-sm);
+}
+
+.task-card--phrase {
+  cursor: pointer;
+}
+
+.task-card--phrase:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .task-card__icon {
@@ -1608,9 +1670,9 @@ input:focus-visible {
   box-shadow: var(--shadow-md);
 }
 
-.phrase-card--favorite {
-  background: var(--brand-soft);
-  border-color: rgba(221, 63, 68, 0.28);
+.phrase-card--learned {
+  background: var(--green-soft);
+  border-color: rgba(31, 154, 103, 0.3);
 }
 
 .phrase-card__content {
@@ -2541,6 +2603,10 @@ input:focus-visible {
     display: inline-flex;
   }
 
+  .topbar__speed {
+    display: block;
+  }
+
   .topbar__title p,
   .topbar__date {
     display: none;
@@ -2597,6 +2663,10 @@ input:focus-visible {
 
   .task-grid {
     grid-template-columns: 1fr;
+  }
+
+  .today-hero__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .stat-grid {

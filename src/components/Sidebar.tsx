@@ -94,7 +94,7 @@ export function Sidebar({
           <input
             type="range"
             min="0.6"
-            max="2.0"
+            max="1.25"
             step="0.05"
             value={voiceRate}
             onChange={(event) => setVoiceRate(Number(event.target.value))}
