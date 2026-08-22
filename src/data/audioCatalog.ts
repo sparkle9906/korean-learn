@@ -9,6 +9,7 @@ import {
   vowels,
 } from './hangul'
 import { phrases } from './phrases'
+import { pronunciationRules } from './pronunciationRules'
 import { words } from './words'
 
 export type AudioItem = {
@@ -47,6 +48,24 @@ const syllableItems: AudioItem[] = initialOrder.flatMap((initial) =>
   }),
 )
 
+const pronunciationRuleItems: AudioItem[] = pronunciationRules.flatMap((rule) =>
+  rule.examples.flatMap((example, index) => {
+    const number = String(index + 1).padStart(2, '0')
+    return [
+      {
+        id: `rule-${rule.id}-${number}-natural`,
+        text: example.spelling,
+        path: `audio/rules/${rule.id}-${number}-natural.mp3`,
+      },
+      {
+        id: `rule-${rule.id}-${number}-syllables`,
+        text: example.syllables,
+        path: `audio/rules/${rule.id}-${number}-syllables.mp3`,
+      },
+    ]
+  }),
+)
+
 export const audioItems: AudioItem[] = [
   ...words.map((word) => ({
     id: `word-${word.id}`,
@@ -60,4 +79,5 @@ export const audioItems: AudioItem[] = [
   })),
   ...letterItems,
   ...syllableItems,
+  ...pronunciationRuleItems,
 ]

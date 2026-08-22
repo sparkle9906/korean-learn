@@ -1,5 +1,5 @@
 {
-  "count": 1100,
+  "count": 1120,
   "files": [
     "audio/words/w01.mp3",
     "audio/words/w02.mp3",
@@ -1100,6 +1100,26 @@
     "audio/syllables/d734.mp3",
     "audio/syllables/d750.mp3",
     "audio/syllables/d76c.mp3",
-    "audio/syllables/d788.mp3"
+    "audio/syllables/d788.mp3",
+    "audio/rules/batchim-01-natural.mp3",
+    "audio/rules/batchim-01-syllables.mp3",
+    "audio/rules/batchim-02-natural.mp3",
+    "audio/rules/batchim-02-syllables.mp3",
+    "audio/rules/liaison-01-natural.mp3",
+    "audio/rules/liaison-01-syllables.mp3",
+    "audio/rules/liaison-02-natural.mp3",
+    "audio/rules/liaison-02-syllables.mp3",
+    "audio/rules/liaison-03-natural.mp3",
+    "audio/rules/liaison-03-syllables.mp3",
+    "audio/rules/nasalization-01-natural.mp3",
+    "audio/rules/nasalization-01-syllables.mp3",
+    "audio/rules/liquidization-01-natural.mp3",
+    "audio/rules/liquidization-01-syllables.mp3",
+    "audio/rules/tensing-01-natural.mp3",
+    "audio/rules/tensing-01-syllables.mp3",
+    "audio/rules/h-assimilation-01-natural.mp3",
+    "audio/rules/h-assimilation-01-syllables.mp3",
+    "audio/rules/h-assimilation-02-natural.mp3",
+    "audio/rules/h-assimilation-02-syllables.mp3"
   ]
 }
