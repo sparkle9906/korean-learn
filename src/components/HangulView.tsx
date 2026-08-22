@@ -296,8 +296,12 @@ export function HangulView() {
                         </div>
                       </div>
                       <p>{example.explanation}</p>
-                      <div className="pronunciation-example__footer">
+                      <div className="pronunciation-example__meta">
                         <span>{example.roman}</span>
+                        <span>{example.meaning}</span>
+                      </div>
+                      <div className="pronunciation-example__footer">
+                        <span>跟读两次，再听自然读。</span>
                         <div className="pronunciation-example__actions">
                           <button type="button" className="pronunciation-audio-button" onClick={() => playKorean(example.syllables)}>
                             <Volume2 size={14} />

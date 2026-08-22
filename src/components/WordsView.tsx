@@ -113,12 +113,15 @@ export function WordsView() {
                   <span className="word-card__hangul">{word.ko}</span>
                   <span className="word-card__roman">{word.roman}</span>
                   <span className="word-card__meaning">{word.zh}</span>
-                  {pronunciationHint ? (
-                    <span className="word-pronunciation-hint" title={`自然听感：${pronunciationHint.pronunciation}`}>
-                      <Volume2 size={13} aria-hidden="true" />
-                      发音提示 · {pronunciationHint.label} [{pronunciationHint.pronunciation}]
-                    </span>
-                  ) : null}
+                  <span
+                    className={`word-pronunciation-hint ${pronunciationHint ? 'word-pronunciation-hint--rule' : 'word-pronunciation-hint--general'}`}
+                    title={pronunciationHint ? `自然听感：${pronunciationHint.pronunciation}` : '点击卡片或喇叭，听 Karina 的自然读法'}
+                  >
+                    <Volume2 size={13} aria-hidden="true" />
+                    {pronunciationHint
+                      ? `发音提示 · ${pronunciationHint.label} [${pronunciationHint.pronunciation}]`
+                      : '发音提示 · 点击播放 Karina 自然读'}
+                  </span>
                   {word.note ? <span className="note">{word.note}</span> : null}
                 </div>
               </motion.article>

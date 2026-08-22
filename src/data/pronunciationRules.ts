@@ -11,6 +11,7 @@ export type PronunciationExample = {
   syllables: string
   pronunciation: string
   roman: string
+  meaning: string
   explanation: string
 }
 
@@ -39,6 +40,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '옷',
         pronunciation: '옫',
         roman: 'ot',
+        meaning: '衣服',
         explanation: '词尾的 ㅅ 作为收音时，按 [ㄷ] 类的短促收音处理。',
       },
       {
@@ -46,6 +48,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '책',
         pronunciation: '책',
         roman: 'chaek',
+        meaning: '书',
         explanation: '末尾的 ㄱ 收住即可，不要在后面额外加一个“格”。',
       },
     ],
@@ -64,6 +67,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '한 국 어',
         pronunciation: '한구거',
         roman: 'hangugeo',
+        meaning: '韩语',
         explanation: '국 的收音 ㄱ 连到 어 的开头，听起来更像“한구거”。',
       },
       {
@@ -71,6 +75,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '책 이',
         pronunciation: '채기',
         roman: 'chaegi',
+        meaning: '书（主语形式）',
         explanation: '책 的收音 ㄱ 连到 이 的开头。',
       },
       {
@@ -78,6 +83,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '옷 을',
         pronunciation: '오슬',
         roman: 'oseul',
+        meaning: '衣服（宾语形式）',
         explanation: '옷 的收音 ㅅ 连到 을 的开头，听感会变得连续。',
       },
     ],
@@ -96,6 +102,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '국 물',
         pronunciation: '궁물',
         roman: 'gungmul',
+        meaning: '汤汁 / 汤',
         explanation: '국 的收音 ㄱ 遇到 ㅁ，会鼻音化，听起来接近“궁물”。',
       },
     ],
@@ -113,6 +120,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '신 라',
         pronunciation: '실라',
         roman: 'silla',
+        meaning: '新罗',
         explanation: 'ㄴ 后面接 ㄹ，发音会流畅地靠近“실라”。',
       },
     ],
@@ -130,6 +138,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '학 교',
         pronunciation: '학꾜',
         roman: 'hakgyo',
+        meaning: '学校',
         explanation: 'ㄱ 收音后面的 ㄱ 会紧音化，因此听起来接近“학꾜”。',
       },
     ],
@@ -147,6 +156,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '좋 다',
         pronunciation: '조타',
         roman: 'jota',
+        meaning: '好',
         explanation: 'ㅎ 的影响让后面的 ㄷ 变得更送气，整体听起来接近“조타”。',
       },
       {
@@ -154,6 +164,7 @@ export const pronunciationRules: PronunciationRule[] = [
         syllables: '많 이',
         pronunciation: '마니',
         roman: 'mani',
+        meaning: '很多 / 大量地',
         explanation: 'ㅎ 在这里弱化，常听成更顺的“마니”。',
       },
     ],

@@ -3285,3 +3285,33 @@ input:focus-visible {
     flex: 1;
   }
 }
+
+.pronunciation-example__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-top: 9px;
+}
+
+.pronunciation-example__meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  padding: 2px 7px;
+  color: var(--text-secondary);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.pronunciation-example__meta span:last-child {
+  color: var(--text);
+}
+
+.word-pronunciation-hint--general {
+  color: var(--text-secondary);
+  background: var(--bg-deep);
+}
