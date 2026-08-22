@@ -2903,3 +2903,385 @@ input:focus-visible {
 .practice-controls__start {
   margin-left: auto;
 }
+
+/* Hangul learning modes and pronunciation rules */
+.hangul-section-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 18px;
+  background: linear-gradient(125deg, var(--surface-strong), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.hangul-section-switcher__copy {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.hangul-section-switcher__copy .pill {
+  flex: 0 0 auto;
+}
+
+.hangul-section-switcher__copy h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.hangul-section-switcher__copy p {
+  margin: 3px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.hangul-section-switcher__tabs {
+  flex: 0 0 auto;
+}
+
+.pronunciation-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pronunciation-rules__intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 4px 2px 0;
+}
+
+.pronunciation-rules__intro h2 {
+  max-width: 620px;
+  margin: 2px 0 5px;
+  font-size: clamp(23px, 2.7vw, 31px);
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
+.pronunciation-rules__intro p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.pronunciation-rules__count {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.pronunciation-rules__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pronunciation-rule-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 19px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pronunciation-rule-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pronunciation-rule-card__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.pronunciation-rule-card__title h3 {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.pronunciation-rule-card__level {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.pronunciation-rule-card__level--starter {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.pronunciation-rule-card__level--next {
+  color: #aa7817;
+  background: var(--gold-soft);
+}
+
+[data-theme="dark"] .pronunciation-rule-card__level--next {
+  color: var(--gold);
+}
+
+.pronunciation-rule-card__korean {
+  color: var(--text-secondary);
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pronunciation-rule-card__index {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.pronunciation-rule-card__summary {
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 670;
+  line-height: 1.6;
+}
+
+.pronunciation-rule-card__explanation {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.pronunciation-rule-card__examples {
+  display: grid;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.pronunciation-example {
+  padding: 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+
+.pronunciation-flow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.pronunciation-flow__word {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pronunciation-flow__label {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.pronunciation-flow__word strong {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.pronunciation-flow__word--sound strong {
+  color: var(--accent);
+  font-size: 21px;
+}
+
+.pronunciation-flow__arrow {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+}
+
+.pronunciation-example > p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.pronunciation-example__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pronunciation-example__footer > span {
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.pronunciation-example__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.pronunciation-audio-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 29px;
+  padding: 5px 8px;
+  color: var(--text-secondary);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.pronunciation-audio-button:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.pronunciation-audio-button--primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.pronunciation-audio-button--primary:hover {
+  color: #fff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.pronunciation-hint {
+  margin: 11px 0 0;
+  padding: 8px 10px;
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.word-pronunciation-hint {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 4px 7px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@media (max-width: 1080px) {
+  .pronunciation-rules__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .hangul-section-switcher,
+  .pronunciation-rules__intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hangul-section-switcher {
+    gap: 14px;
+  }
+
+  .hangul-section-switcher__copy {
+    align-items: flex-start;
+  }
+
+  .hangul-section-switcher__tabs {
+    align-self: stretch;
+  }
+
+  .hangul-section-switcher__tabs .segmented__item {
+    flex: 1;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .pronunciation-rules__intro {
+    gap: 8px;
+  }
+
+  .pronunciation-rules__intro h2 {
+    font-size: 24px;
+  }
+
+  .pronunciation-rule-card {
+    padding: 16px;
+  }
+
+  .pronunciation-example {
+    padding: 11px;
+  }
+
+  .pronunciation-flow__word strong {
+    font-size: 23px;
+  }
+
+  .pronunciation-flow__word--sound strong {
+    font-size: 19px;
+  }
+
+  .pronunciation-example__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pronunciation-example__actions {
+    width: 100%;
+  }
+
+  .pronunciation-audio-button {
+    flex: 1;
+  }
+}
