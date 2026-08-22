@@ -3201,21 +3201,6 @@ input:focus-visible {
   line-height: 1.55;
 }
 
-.word-pronunciation-hint {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: 4px;
-  max-width: 100%;
-  margin-top: 4px;
-  padding: 4px 7px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.35;
-}
 
 @media (max-width: 1080px) {
   .pronunciation-rules__list {
@@ -3309,9 +3294,4 @@ input:focus-visible {
 
 .pronunciation-example__meta span:last-child {
   color: var(--text);
-}
-
-.word-pronunciation-hint--general {
-  color: var(--text-secondary);
-  background: var(--bg-deep);
 }

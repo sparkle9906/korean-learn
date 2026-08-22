@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
-import { BookMarked, Search, Volume2 } from 'lucide-react'
+import { BookMarked, Search } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { wordCategories, words } from '../data/words'
-import { wordPronunciationHints } from '../data/pronunciationRules'
 import type { WordCategory } from '../types'
 import { LearnedCheck, PlayButton, ProgressRing, SectionHeader } from './Shared'
 import { speakKorean } from '../lib/speech'
@@ -77,7 +76,6 @@ export function WordsView() {
         <div className="word-grid">
           {filtered.map((word) => {
             const learned = Boolean(progress.learnedWords[word.id])
-            const pronunciationHint = wordPronunciationHints[word.id]
             return (
               <motion.article
                 key={word.id}
@@ -113,15 +111,6 @@ export function WordsView() {
                   <span className="word-card__hangul">{word.ko}</span>
                   <span className="word-card__roman">{word.roman}</span>
                   <span className="word-card__meaning">{word.zh}</span>
-                  <span
-                    className={`word-pronunciation-hint ${pronunciationHint ? 'word-pronunciation-hint--rule' : 'word-pronunciation-hint--general'}`}
-                    title={pronunciationHint ? `自然听感：${pronunciationHint.pronunciation}` : '点击卡片或喇叭，听 Karina 的自然读法'}
-                  >
-                    <Volume2 size={13} aria-hidden="true" />
-                    {pronunciationHint
-                      ? `发音提示 · ${pronunciationHint.label} [${pronunciationHint.pronunciation}]`
-                      : '发音提示 · 点击播放 Karina 自然读'}
-                  </span>
                   {word.note ? <span className="note">{word.note}</span> : null}
                 </div>
               </motion.article>
