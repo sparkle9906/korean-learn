@@ -4,7 +4,8 @@ import { ArrowRight, BookOpenText, Check, Play, Volume2 } from 'lucide-react'
 import { useApp } from '../lib/AppContext'
 import { composeSyllable, compoundConsonants, compoundVowels, consonants, syllableTips, vowels } from '../data/hangul'
 import { pronunciationRules } from '../data/pronunciationRules'
-import { speakKorean } from '../lib/speech'
+import { speakAudio, speakKorean } from '../lib/speech'
+import { audioUrlForId } from '../lib/audioMap'
 import { SectionHeader } from './Shared'
 import type { HangulLetter } from '../types'
 
@@ -23,6 +24,13 @@ export function HangulView() {
 
   const playKorean = (text: string) => {
     const ok = speakKorean(text, voiceRate)
+    if (!ok) notify('当前浏览器不支持语音合成')
+  }
+
+  const playRuleExample = (ruleId: string, exampleIndex: number, mode: 'natural' | 'syllables', fallbackText: string) => {
+    const number = String(exampleIndex + 1).padStart(2, '0')
+    const audioUrl = audioUrlForId(`rule-${ruleId}-${number}-${mode}`)
+    const ok = audioUrl ? speakAudio(audioUrl, fallbackText, voiceRate) : speakKorean(fallbackText, voiceRate)
     if (!ok) notify('当前浏览器不支持语音合成')
   }
 
@@ -303,11 +311,11 @@ export function HangulView() {
                       <div className="pronunciation-example__footer">
                         <span>跟读两次，再听自然读。</span>
                         <div className="pronunciation-example__actions">
-                          <button type="button" className="pronunciation-audio-button" onClick={() => playKorean(example.syllables)}>
+                          <button type="button" className="pronunciation-audio-button" onClick={() => playRuleExample(rule.id, rule.examples.indexOf(example), 'syllables', example.syllables)}>
                             <Volume2 size={14} />
                             逐音节
                           </button>
-                          <button type="button" className="pronunciation-audio-button pronunciation-audio-button--primary" onClick={() => playKorean(example.spelling)}>
+                          <button type="button" className="pronunciation-audio-button pronunciation-audio-button--primary" onClick={() => playRuleExample(rule.id, rule.examples.indexOf(example), 'natural', example.spelling)}>
                             <Play size={14} fill="currentColor" />
                             自然读
                           </button>

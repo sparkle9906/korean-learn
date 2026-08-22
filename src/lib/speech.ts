@@ -55,6 +55,14 @@ function playLocalAudio(url: string, text: string, rate: number): boolean {
   return true
 }
 
+export function speakAudio(url: string, text: string, rate = 1): boolean {
+  if (typeof window === 'undefined') return false
+  const now = performance.now()
+  if (now - lastPlayAt < playDebounceMs) return true
+  lastPlayAt = now
+  return playLocalAudio(url, text, rate)
+}
+
 export function speakKorean(text: string, rate = 1): boolean {
   if (typeof window === 'undefined') return false
   const now = performance.now()
