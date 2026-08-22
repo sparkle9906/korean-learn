@@ -9,7 +9,7 @@ export type HangulLetter = {
   tip: string
 }
 
-export type WordCategory = '问候' | '数字' | '食物' | '时间' | '家人' | '日常' | '天气' | '购物' | '地点' | '描述'
+export type WordCategory = '问候' | '数字' | '食物' | '时间' | '家人' | '日常' | '天气' | '购物' | '地点' | '交通' | '描述'
 
 export type Word = {
   id: string
